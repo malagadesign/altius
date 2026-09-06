@@ -25,6 +25,10 @@ create index if not exists referrals_participant_id_idx on public.referrals (par
 alter table public.participants enable row level security;
 alter table public.referrals enable row level security;
 
+grant usage on schema public to anon, authenticated;
+grant insert on public.participants to anon, authenticated;
+grant insert on public.referrals to anon, authenticated;
+
 drop policy if exists "Public participants can be inserted" on public.participants;
 create policy "Public participants can be inserted"
 on public.participants for insert

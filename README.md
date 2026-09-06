@@ -38,6 +38,7 @@ El formulario publico usa la clave anonima de Supabase para insertar registros y
 
 ## URLs
 
-- Publico / QR del evento: `/`
+- Publicidad / QR del evento: `/`
+- Registro desde QR: `/?registro=1`
 - Panel administrador: `/?admin=1`
 - Tablero participante: se genera automaticamente como `/?participante=<token>`

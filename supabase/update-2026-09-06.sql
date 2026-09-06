@@ -21,6 +21,10 @@ alter table if exists public.referrals
 alter table if exists public.referrals
   alter column email set not null;
 
+grant usage on schema public to anon, authenticated;
+grant insert on public.participants to anon, authenticated;
+grant insert on public.referrals to anon, authenticated;
+
 create or replace function public.get_participant_dashboard(token_input text)
 returns jsonb
 language sql

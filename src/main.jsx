@@ -28,7 +28,7 @@ const supabase =
 
 const demoKey = "altius-referidos-demo-v2";
 const sessionKey = "altius-current-token";
-const eventPath = "/?ingreso=qr";
+const eventPath = "/?registro=1";
 
 const initialParticipant = {
   full_name: "",
@@ -224,7 +224,7 @@ function exportCsv(rows) {
 }
 
 function App() {
-  const [view, setView] = useState("inscripcion");
+  const [view, setView] = useState("front");
   const [participant, setParticipant] = useState(initialParticipant);
   const [referral, setReferral] = useState(initialReferral);
   const [currentParticipant, setCurrentParticipant] = useState(null);
@@ -283,8 +283,9 @@ function App() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const token = params.get("participante") || localStorage.getItem(sessionKey);
+    const token = params.get("participante");
     const adminMode = params.get("admin") === "1";
+    const registrationMode = params.get("registro") === "1" || params.get("ingreso") === "qr";
     QRCode.toDataURL(getEventUrl(), { margin: 1, width: 220 }).then(setEventQr);
 
     if (adminMode) {
@@ -293,6 +294,8 @@ function App() {
       refreshParticipant(token)
         .then(() => setView("mi-tablero"))
         .catch(() => setView("inscripcion"));
+    } else if (registrationMode) {
+      setView("inscripcion");
     }
 
     if (!supabase) {
@@ -377,6 +380,20 @@ function App() {
     setStatus({ type: "success", message: "Link personal copiado." });
   }
 
+  function openRegistration() {
+    window.history.pushState({}, "", eventPath);
+    setView("inscripcion");
+  }
+
+  function openAdmin() {
+    window.history.pushState({}, "", "/?admin=1");
+    setView("admin");
+  }
+
+  if (view === "front") {
+    return <Landing eventQr={eventQr} onStart={openRegistration} onAdmin={openAdmin} />;
+  }
+
   return (
     <main className="app-shell">
       <section className="brand-panel">
@@ -402,15 +419,7 @@ function App() {
             <span>por cada referido</span>
           </div>
         </div>
-        <div className="qr-callout">
-          <div>
-            <QrCode size={22} />
-            <strong>QR de acceso</strong>
-            <span>Para imprimir o mostrar en el evento.</span>
-          </div>
-          {eventQr ? <img src={eventQr} alt="QR de acceso al sorteo" /> : null}
-        </div>
-        <button className="admin-link" onClick={() => setView("admin")}>
+        <button className="admin-link" onClick={openAdmin}>
           <Lock size={16} />
           Panel cliente
         </button>
@@ -491,6 +500,51 @@ function App() {
             setWinner={setWinner}
           />
         ) : null}
+      </section>
+    </main>
+  );
+}
+
+function Landing({ eventQr, onStart, onAdmin }) {
+  return (
+    <main className="landing-screen">
+      <section className="landing-hero">
+        <div className="brand-mark">
+          <Sparkles size={20} />
+          Altius de Chamisero
+        </div>
+        <div className="landing-copy">
+          <span>Sorteo evento · martes 8 de septiembre</span>
+          <h1>Sorteo Altius</h1>
+          <div className="prize-list">
+            <span>Premio principal: parrilla</span>
+            <span>Premio de consuelo: set parrillero</span>
+          </div>
+          <p>Escanea el QR para participar y sumar posibilidades con tus referidos.</p>
+        </div>
+        <div className="event-stats">
+          <strong>1</strong>
+          <span>posibilidad por inscripcion</span>
+          <strong>+1</strong>
+          <span>por cada referido</span>
+        </div>
+      </section>
+
+      <section className="scan-panel">
+        <div className="scan-card">
+          <QrCode size={34} />
+          <span>Escanea para participar</span>
+          {eventQr ? <img src={eventQr} alt="QR para abrir el registro del sorteo" /> : null}
+          <p>El registro se abre en el celular y toma menos de un minuto.</p>
+          <button type="button" onClick={onStart}>
+            Abrir registro
+            <ArrowRight size={18} />
+          </button>
+        </div>
+        <button className="admin-link dark" onClick={onAdmin}>
+          <Lock size={16} />
+          Panel cliente
+        </button>
       </section>
     </main>
   );

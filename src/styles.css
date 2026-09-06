@@ -33,6 +33,114 @@ button {
   min-height: 100vh;
 }
 
+.landing-screen {
+  display: grid;
+  grid-template-columns: minmax(420px, 1.15fr) minmax(360px, 0.85fr);
+  min-height: 100vh;
+  color: #fffaf0;
+  background:
+    linear-gradient(145deg, rgba(22, 35, 29, 0.9), rgba(73, 67, 45, 0.7)),
+    url("https://images.unsplash.com/photo-1556911220-bff31c812dba?auto=format&fit=crop&w=1600&q=80")
+      center / cover;
+}
+
+.landing-hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 42px;
+  padding: clamp(28px, 5vw, 64px);
+}
+
+.landing-copy {
+  max-width: 760px;
+}
+
+.landing-copy > span {
+  color: #e9b757;
+  font-size: 13px;
+  font-weight: 880;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.landing-copy h1 {
+  margin: 14px 0 16px;
+  font-size: clamp(58px, 11vw, 132px);
+  line-height: 0.9;
+  letter-spacing: 0;
+}
+
+.landing-copy p {
+  max-width: 580px;
+  margin: 22px 0 0;
+  color: rgba(255, 250, 240, 0.88);
+  font-size: clamp(20px, 2.2vw, 30px);
+  font-weight: 760;
+  line-height: 1.25;
+}
+
+.scan-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 18px;
+  padding: clamp(24px, 4vw, 48px);
+  background: rgba(255, 253, 247, 0.94);
+  color: #17201b;
+}
+
+.scan-card {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  padding: clamp(24px, 4vw, 42px);
+  border: 1px solid #ddd6c7;
+  border-radius: 8px;
+  background: #fffdf7;
+  box-shadow: 0 28px 64px rgba(31, 30, 24, 0.12);
+  text-align: center;
+}
+
+.scan-card > svg {
+  color: #96712d;
+}
+
+.scan-card > span {
+  font-size: clamp(24px, 3vw, 34px);
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+.scan-card img {
+  width: min(66vw, 320px);
+  height: min(66vw, 320px);
+  padding: 10px;
+  border: 1px solid #ddd6c7;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.scan-card p {
+  max-width: 300px;
+  margin: 0;
+  color: #697068;
+  line-height: 1.45;
+}
+
+.scan-card button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 50px;
+  border-radius: 6px;
+  color: #fffaf0;
+  background: #1e3529;
+  font-weight: 850;
+}
+
 .brand-panel {
   position: sticky;
   top: 0;
@@ -90,6 +198,27 @@ button {
   color: rgba(255, 250, 240, 0.88);
   font-size: 18px;
   line-height: 1.55;
+}
+
+.prize-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 14px;
+}
+
+.prize-list span {
+  display: inline-flex;
+  width: fit-content;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  color: #fffaf0;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 12px;
+  font-weight: 820;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .event-stats {
@@ -163,6 +292,11 @@ button {
   background: transparent;
   font-size: 14px;
   font-weight: 760;
+}
+
+.admin-link.dark {
+  color: #5c625d;
+  align-self: center;
 }
 
 .workspace {
@@ -609,6 +743,14 @@ td span {
 }
 
 @media (max-width: 1020px) {
+  .landing-screen {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-hero {
+    min-height: 56vh;
+  }
+
   .app-shell {
     grid-template-columns: 1fr;
   }
@@ -628,6 +770,23 @@ td span {
 }
 
 @media (max-width: 660px) {
+  .landing-hero {
+    min-height: 52vh;
+    padding: 24px;
+  }
+
+  .landing-copy h1 {
+    font-size: 58px;
+  }
+
+  .landing-copy p {
+    font-size: 20px;
+  }
+
+  .scan-panel {
+    padding: 18px;
+  }
+
   .brand-panel {
     min-height: auto;
     padding: 24px;
@@ -645,13 +804,8 @@ td span {
     font-size: 42px;
   }
 
-  .qr-callout,
   .qr-card {
     grid-template-columns: 1fr;
-  }
-
-  .qr-callout {
-    display: grid;
   }
 
   .participant-grid,
