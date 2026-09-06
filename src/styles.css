@@ -299,6 +299,116 @@ button {
   align-self: center;
 }
 
+.admin-screen {
+  min-height: 100vh;
+  background:
+    linear-gradient(135deg, rgba(23, 32, 27, 0.98), rgba(43, 45, 37, 0.92)),
+    #17201b;
+  color: #fffaf0;
+}
+
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 24px clamp(20px, 5vw, 56px);
+  border-bottom: 1px solid rgba(255, 250, 240, 0.12);
+}
+
+.admin-header span,
+.admin-panel-title span,
+.admin-login-copy span {
+  color: #e9b757;
+  font-size: 12px;
+  font-weight: 860;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-header h1 {
+  margin: 4px 0 0;
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.admin-home-link {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 250, 240, 0.18);
+  border-radius: 6px;
+  color: #fffaf0;
+  background: rgba(255, 255, 255, 0.08);
+  font-weight: 780;
+}
+
+.admin-container {
+  width: min(1180px, calc(100% - 40px));
+  margin: 0 auto;
+  padding: 28px 0 48px;
+}
+
+.admin-login-card {
+  display: grid;
+  gap: 20px;
+  width: min(440px, 100%);
+  margin: 8vh auto 0;
+  padding: 30px;
+  border: 1px solid rgba(255, 250, 240, 0.14);
+  border-radius: 8px;
+  background: #fffdf7;
+  color: #17201b;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.32);
+}
+
+.admin-login-mark {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  color: #e9b757;
+  background: #1e3529;
+}
+
+.admin-login-copy h2 {
+  margin: 8px 0 8px;
+  font-size: 30px;
+  letter-spacing: 0;
+}
+
+.admin-login-copy p {
+  margin: 0;
+  color: #697068;
+  line-height: 1.45;
+}
+
+.admin-login-fields {
+  display: grid;
+  gap: 2px;
+}
+
+.admin-panel-title {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.admin-panel-title h2 {
+  margin: 5px 0 0;
+  font-size: clamp(26px, 3vw, 36px);
+  letter-spacing: 0;
+}
+
+.admin-panel-title p {
+  margin: 0;
+  color: #697068;
+  font-weight: 740;
+}
+
 .workspace {
   padding: 32px;
   background:

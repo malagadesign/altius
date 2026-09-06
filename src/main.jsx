@@ -25,6 +25,8 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase =
   supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
+const demoAdminUsername = import.meta.env.VITE_ADMIN_USERNAME || "admin";
+const demoAdminPassword = import.meta.env.VITE_ADMIN_PASSWORD || "admin";
 
 const demoKey = "altius-referidos-demo-v2";
 const sessionKey = "altius-current-token";
@@ -166,6 +168,10 @@ async function fetchAdminEntries(username, password) {
     return response.json();
   }
 
+  if (username !== demoAdminUsername || password !== demoAdminPassword) {
+    throw new Error("Invalid admin credentials");
+  }
+
   return readDemoData();
 }
 
@@ -232,7 +238,7 @@ function App() {
   const [entries, setEntries] = useState({ participants: [], referrals: [] });
   const [status, setStatus] = useState({ type: "", message: "" });
   const [loading, setLoading] = useState(false);
-  const [adminUnlocked, setAdminUnlocked] = useState(!supabase);
+  const [adminUnlocked, setAdminUnlocked] = useState(false);
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [winner, setWinner] = useState(null);
@@ -298,9 +304,7 @@ function App() {
       setView("inscripcion");
     }
 
-    if (!supabase) {
-      refreshAdminEntries().catch(() => null);
-    }
+    if (!supabase) setEntries(readDemoData());
   }, []);
 
   useEffect(() => {
@@ -390,8 +394,52 @@ function App() {
     setView("admin");
   }
 
+  function openFront() {
+    window.history.pushState({}, "", "/");
+    setStatus({ type: "", message: "" });
+    setView("front");
+  }
+
   if (view === "front") {
     return <Landing eventQr={eventQr} onStart={openRegistration} onAdmin={openAdmin} />;
+  }
+
+  if (view === "admin") {
+    return (
+      <main className="admin-screen">
+        <header className="admin-header">
+          <div>
+            <span>Altius de Chamisero</span>
+            <h1>Panel de referidos</h1>
+          </div>
+          <button className="admin-home-link" onClick={openFront}>
+            Ver QR
+          </button>
+        </header>
+        <section className="admin-container">
+          {status.message ? <p className={`notice ${status.type}`}>{status.message}</p> : null}
+          <AdminPanel
+            adminUnlocked={adminUnlocked}
+            password={password}
+            setPassword={setPassword}
+            username={username}
+            setUsername={setUsername}
+            unlockAdmin={unlockAdmin}
+            totals={totals}
+            rows={rows}
+            filteredRows={filteredRows}
+            selectedRow={selectedRow}
+            setSelectedId={setSelectedId}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            refreshAdminEntries={refreshAdminEntries}
+            exportCsv={exportCsv}
+            winner={winner}
+            setWinner={setWinner}
+          />
+        </section>
+      </main>
+    );
   }
 
   return (
@@ -426,7 +474,7 @@ function App() {
       </section>
 
       <section className="workspace">
-        {currentParticipant || view === "admin" ? (
+        {currentParticipant ? (
           <nav className="tabs" aria-label="Secciones">
             <button
               className={view === "inscripcion" ? "active" : ""}
@@ -479,27 +527,6 @@ function App() {
           />
         ) : null}
 
-        {view === "admin" ? (
-          <AdminPanel
-            adminUnlocked={adminUnlocked}
-            password={password}
-            setPassword={setPassword}
-            username={username}
-            setUsername={setUsername}
-            unlockAdmin={unlockAdmin}
-            totals={totals}
-            rows={rows}
-            filteredRows={filteredRows}
-            selectedRow={selectedRow}
-            setSelectedId={setSelectedId}
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
-            refreshAdminEntries={refreshAdminEntries}
-            exportCsv={exportCsv}
-            winner={winner}
-            setWinner={setWinner}
-          />
-        ) : null}
       </section>
     </main>
   );
@@ -720,23 +747,33 @@ function AdminPanel({
 }) {
   if (!adminUnlocked) {
     return (
-      <form className="form-panel compact" onSubmit={unlockAdmin}>
-        <div className="section-heading">
-          <Lock size={22} />
-          <div>
-            <h2>Panel cliente</h2>
-            <p>Ingresa la clave definida para ver toda la informacion.</p>
-          </div>
+      <form className="admin-login-card" onSubmit={unlockAdmin}>
+        <div className="admin-login-mark">
+          <Lock size={24} />
         </div>
-        <Field label="Usuario" value={username} onChange={setUsername} required />
-        <Field label="Clave" type="password" value={password} onChange={setPassword} required />
-        <button className="primary-action">Entrar</button>
+        <div className="admin-login-copy">
+          <span>Acceso privado</span>
+          <h2>Ingresar al panel</h2>
+          <p>Usa las credenciales del equipo para revisar participantes y referidos.</p>
+        </div>
+        <div className="admin-login-fields">
+          <Field label="Usuario" value={username} onChange={setUsername} required />
+          <Field label="Clave" type="password" value={password} onChange={setPassword} required />
+        </div>
+        <button className="primary-action">Entrar al panel</button>
       </form>
     );
   }
 
   return (
     <div className="admin-panel">
+      <div className="admin-panel-title">
+        <div>
+          <span>Resumen en vivo</span>
+          <h2>Registro de participantes</h2>
+        </div>
+        <p>Sorteo evento · martes 8 de septiembre</p>
+      </div>
       <div className="metric-grid">
         <Metric icon={<Users size={20} />} label="Participantes" value={totals.participants} />
         <Metric icon={<Plus size={20} />} label="Referidos" value={totals.referrals} />
