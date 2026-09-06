@@ -23,6 +23,8 @@ Si no hay variables de Supabase, la app funciona en modo demo usando almacenamie
 
 Ejecutar el SQL de `supabase/schema.sql` en el SQL Editor de Supabase.
 
+Si ya se habia ejecutado una version anterior con comuna o RUT, ejecutar primero `supabase/update-2026-09-06.sql`.
+
 Para Vercel, cargar las mismas variables:
 
 - `VITE_SUPABASE_URL`
@@ -33,3 +35,9 @@ Para Vercel, cargar las mismas variables:
 - `ADMIN_PASSWORD`
 
 El formulario publico usa la clave anonima de Supabase solo para insertar registros. El panel interno lee datos mediante `/api/admin-data`, protegido por `ADMIN_USERNAME`, `ADMIN_PASSWORD` y la service role key del servidor. El tablero personal lee solo el registro asociado al token publico del participante mediante `/api/participant-data`.
+
+## URLs
+
+- Publico / QR del evento: `/`
+- Panel administrador: `/?admin=1`
+- Tablero participante: se genera automaticamente como `/?participante=<token>`
