@@ -21,27 +21,14 @@ export default async function handler(request, response) {
   }
 
   const supabase = createClient(supabaseUrl, serviceRoleKey);
-  const { data: participant, error: participantError } = await supabase
-    .from("participants")
-    .select("*")
-    .eq("public_token", token)
-    .single();
+  const { data, error } = await supabase.rpc("get_participant_dashboard", {
+    token_input: token,
+  });
 
-  if (participantError || !participant) {
+  if (error || !data?.participant) {
     response.status(404).json({ error: "Participant not found" });
     return;
   }
 
-  const { data: referrals, error: referralsError } = await supabase
-    .from("referrals")
-    .select("*")
-    .eq("participant_id", participant.id)
-    .order("created_at", { ascending: false });
-
-  if (referralsError) {
-    response.status(500).json({ error: "Could not load referrals" });
-    return;
-  }
-
-  response.status(200).json({ participant, referrals });
+  response.status(200).json(data);
 }

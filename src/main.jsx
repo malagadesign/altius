@@ -138,9 +138,11 @@ async function fetchParticipantDashboard(token) {
   if (!token) return null;
 
   if (supabase) {
-    const response = await fetch(`/api/participant-data?token=${encodeURIComponent(token)}`);
-    if (!response.ok) throw new Error("Participant data unavailable");
-    return response.json();
+    const { data, error } = await supabase.rpc("get_participant_dashboard", {
+      token_input: token,
+    });
+    if (error || !data?.participant) throw new Error("Participant data unavailable");
+    return data;
   }
 
   const data = readDemoData();

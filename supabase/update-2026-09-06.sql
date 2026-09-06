@@ -20,3 +20,30 @@ alter table if exists public.referrals
 
 alter table if exists public.referrals
   alter column email set not null;
+
+create or replace function public.get_participant_dashboard(token_input text)
+returns jsonb
+language sql
+security definer
+set search_path = public
+as $$
+  select jsonb_build_object(
+    'participant',
+    to_jsonb(p),
+    'referrals',
+    coalesce(
+      (
+        select jsonb_agg(to_jsonb(r) order by r.created_at desc)
+        from public.referrals r
+        where r.participant_id = p.id
+      ),
+      '[]'::jsonb
+    )
+  )
+  from public.participants p
+  where p.public_token = token_input
+  limit 1;
+$$;
+
+revoke all on function public.get_participant_dashboard(text) from public;
+grant execute on function public.get_participant_dashboard(text) to anon, authenticated;

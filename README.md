@@ -34,7 +34,7 @@ Para Vercel, cargar las mismas variables:
 - `ADMIN_USERNAME`
 - `ADMIN_PASSWORD`
 
-El formulario publico usa la clave anonima de Supabase solo para insertar registros. El panel interno lee datos mediante `/api/admin-data`, protegido por `ADMIN_USERNAME`, `ADMIN_PASSWORD` y la service role key del servidor. El tablero personal lee solo el registro asociado al token publico del participante mediante `/api/participant-data`.
+El formulario publico usa la clave anonima de Supabase para insertar registros y recuperar solo el tablero del token personal. El panel interno lee datos mediante `/api/admin-data`, protegido por `ADMIN_USERNAME`, `ADMIN_PASSWORD` y la service role key del servidor.
 
 ## URLs
 
