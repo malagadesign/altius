@@ -11,7 +11,6 @@ import {
   QrCode,
   RefreshCw,
   Search,
-  Sparkles,
   Ticket,
   Trophy,
   UserPlus,
@@ -445,10 +444,7 @@ function App() {
   return (
     <main className="app-shell">
       <section className="brand-panel">
-        <div className="brand-mark">
-          <Sparkles size={20} />
-          Altius de Chamisero
-        </div>
+        <LogoMark />
         <div className="event-card">
           <span>Sorteo evento · martes 8 de septiembre</span>
           <h1>Sorteo Altius</h1>
@@ -489,10 +485,6 @@ function App() {
             >
               <LayoutDashboard size={18} />
               Mi tablero
-            </button>
-            <button className={view === "admin" ? "active" : ""} onClick={() => setView("admin")}>
-              <Lock size={18} />
-              Admin
             </button>
           </nav>
         ) : null}
@@ -536,10 +528,7 @@ function Landing({ eventQr, onStart, onAdmin }) {
   return (
     <main className="landing-screen">
       <section className="landing-hero">
-        <div className="brand-mark">
-          <Sparkles size={20} />
-          Altius de Chamisero
-        </div>
+        <LogoMark />
         <div className="landing-copy">
           <span>Sorteo evento · martes 8 de septiembre</span>
           <h1>Sorteo Altius</h1>
@@ -574,6 +563,14 @@ function Landing({ eventQr, onStart, onAdmin }) {
         </button>
       </section>
     </main>
+  );
+}
+
+function LogoMark() {
+  return (
+    <div className="brand-mark" aria-label="Altius de Chamisero">
+      <img src="/logo-chamisero.svg" alt="Altius de Chamisero" />
+    </div>
   );
 }
 
