@@ -12,13 +12,16 @@ export default async function handler(request, response) {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!adminPassword || !supabaseUrl || !serviceRoleKey) {
-    response.status(500).json({ error: "Admin environment is not configured" });
+    response.status(500).json({
+      code: "admin_not_configured",
+      error: "Admin environment is not configured",
+    });
     return;
   }
 
   const body = request.body || {};
   if (body.username !== adminUsername || body.password !== adminPassword) {
-    response.status(401).json({ error: "Unauthorized" });
+    response.status(401).json({ code: "invalid_credentials", error: "Unauthorized" });
     return;
   }
 
@@ -30,7 +33,7 @@ export default async function handler(request, response) {
     ]);
 
   if (participantsError || referralsError) {
-    response.status(500).json({ error: "Could not load entries" });
+    response.status(500).json({ code: "admin_data_error", error: "Could not load entries" });
     return;
   }
 

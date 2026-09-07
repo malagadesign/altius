@@ -241,7 +241,12 @@ async function fetchAdminEntries(username, password) {
       body: JSON.stringify({ username, password }),
     });
 
-    if (!response.ok) throw new Error("Admin data unavailable");
+    const data = await response.json().catch(() => null);
+    if (!response.ok) {
+      const error = new Error("Admin data unavailable");
+      error.code = data?.code;
+      throw error;
+    }
     return data;
   }
 
@@ -266,7 +271,7 @@ async function clearTestEntries(username, password) {
       error.code = data?.code;
       throw error;
     }
-    return response.json();
+    return data;
   }
 
   if (username !== demoAdminUsername || password !== demoAdminPassword) {
@@ -532,8 +537,17 @@ function App() {
         setAdminUnlocked(true);
         setStatus({ type: "", message: "" });
       })
-      .catch(() => {
-        setStatus({ type: "error", message: "Clave incorrecta o panel no configurado." });
+      .catch((error) => {
+        const messageByCode = {
+          admin_not_configured:
+            "Faltan variables del panel admin en Vercel: ADMIN_PASSWORD, SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY.",
+          invalid_credentials: "Usuario o clave incorrectos.",
+          admin_data_error: "No se pudieron cargar los registros desde Supabase.",
+        };
+        setStatus({
+          type: "error",
+          message: messageByCode[error.code] || "No se pudo ingresar al panel.",
+        });
       });
   }
 
