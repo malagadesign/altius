@@ -4,7 +4,6 @@ import {
   ArrowRight,
   Clipboard,
   Download,
-  Gift,
   LayoutDashboard,
   Lock,
   Plus,
@@ -441,6 +440,25 @@ function App() {
     );
   }
 
+  if (view === "inscripcion") {
+    return (
+      <RegistrationPage>
+        {status.message ? <p className={`notice ${status.type}`}>{status.message}</p> : null}
+        {!supabase ? (
+          <p className="notice subtle">
+            Modo demo local activo. Cuando conectemos Supabase, los datos quedan centralizados.
+          </p>
+        ) : null}
+        <RegistrationForm
+          participant={participant}
+          setParticipant={setParticipant}
+          loading={loading}
+          onSubmit={handleParticipantSubmit}
+        />
+      </RegistrationPage>
+    );
+  }
+
   return (
     <main className="app-shell">
       <section className="brand-panel">
@@ -490,20 +508,6 @@ function App() {
         ) : null}
 
         {status.message ? <p className={`notice ${status.type}`}>{status.message}</p> : null}
-        {!supabase ? (
-          <p className="notice subtle">
-            Modo demo local activo. Cuando conectemos Supabase, los datos quedan centralizados.
-          </p>
-        ) : null}
-
-        {view === "inscripcion" ? (
-          <RegistrationForm
-            participant={participant}
-            setParticipant={setParticipant}
-            loading={loading}
-            onSubmit={handleParticipantSubmit}
-          />
-        ) : null}
 
         {view === "mi-tablero" ? (
           <ParticipantDashboard
@@ -519,6 +523,55 @@ function App() {
           />
         ) : null}
 
+      </section>
+    </main>
+  );
+}
+
+function RegistrationPage({ children }) {
+  return (
+    <main className="registration-screen">
+      <header className="registration-hero">
+        <LogoMark />
+        <div className="registration-title-block">
+          <span>Sorteo exclusivo</span>
+          <h1 className="registration-title">Regístrate y participa</h1>
+        </div>
+      </header>
+
+      <section className="registration-content">
+        <p className="registration-intro">
+          Invita a tus contactos: cada referido suma una posibilidad.
+        </p>
+
+        <div className="registration-prizes" aria-label="Premios del sorteo">
+          <article className="registration-prize primary">
+            <span>Primer premio</span>
+            <strong>Una parrilla</strong>
+          </article>
+          <article className="registration-prize">
+            <span>Premio adicional</span>
+            <strong>Set parrillero</strong>
+          </article>
+        </div>
+
+        <div className="registration-possibilities" aria-label="Posibilidades del sorteo">
+          <div>
+            <strong>1</strong>
+            <span>Posibilidad al registrarte</span>
+          </div>
+          <b>+</b>
+          <div>
+            <strong>1</strong>
+            <span>Por cada referido registrado</span>
+          </div>
+        </div>
+
+        {children}
+
+        <p className="registration-legal">
+          El sorteo se realizará el martes 8 de septiembre. Consulta las bases y condiciones.
+        </p>
       </section>
     </main>
   );
@@ -578,10 +631,9 @@ function RegistrationForm({ participant, setParticipant, loading, onSubmit }) {
   return (
     <form className="form-panel" onSubmit={onSubmit}>
       <div className="section-heading">
-        <Gift size={22} />
         <div>
-          <h2>Datos del titular</h2>
-          <p>Completa tus datos para participar y desbloquear tu tablero de referidos.</p>
+          <h2>Tus datos</h2>
+          <p>Completa el registro y después podrás sumar referidos.</p>
         </div>
       </div>
 
@@ -611,7 +663,7 @@ function RegistrationForm({ participant, setParticipant, loading, onSubmit }) {
       </label>
 
       <button className="primary-action" disabled={loading}>
-        {loading ? "Guardando..." : "Inscribirme y ver mi tablero"}
+        {loading ? "Guardando..." : "Quiero participar"}
         <ArrowRight size={18} />
       </button>
     </form>
