@@ -1249,8 +1249,9 @@ button {
 .prize-winner h3 {
   margin: 0;
   color: var(--brand-deep);
-  font-size: clamp(24px, 2.4vw, 32px);
+  font-size: clamp(22px, 2.1vw, 28px);
   line-height: 1.05;
+  overflow-wrap: anywhere;
 }
 
 .prize-winner p {
@@ -1347,7 +1348,7 @@ button {
 .draw-name-window.is-reveal {
   border-color: rgba(215, 170, 98, 0.58);
   background: var(--brand-deep);
-  color: var(--accent-soft);
+  color: #f2dfb4;
 }
 
 .draw-name-window.is-reveal strong {

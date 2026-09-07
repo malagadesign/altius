@@ -1122,7 +1122,7 @@ function DrawModal({ state, onClose }) {
   const isReveal = state.phase.endsWith("-reveal");
   const isSetPrize = state.phase.startsWith("set");
   const prizeLabel = isSetPrize ? "Premio adicional · Set parrillero" : "Primer premio · Parrilla";
-  const title = isDone ? "Resultado del sorteo" : isReveal ? "Tenemos ganador" : "Sorteando...";
+  const title = isDone ? "Resultado del sorteo" : isReveal ? "Felicitaciones" : "Sorteando...";
 
   return (
     <div
@@ -1147,9 +1147,9 @@ function DrawModal({ state, onClose }) {
           </>
         ) : (
           <>
-            <p>{prizeLabel}</p>
+            <p>{isReveal ? `Ganador ${prizeLabel.toLowerCase()}` : prizeLabel}</p>
             <div className={`draw-name-window ${isReveal ? "is-reveal" : ""}`}>
-              <strong key={state.name}>{state.name}</strong>
+              <strong key={state.name}>{state.name || "Sin ganador"}</strong>
             </div>
             <div className={`draw-progress ${isReveal ? "is-complete" : ""}`} key={state.phase}>
               <span style={{ animationDuration: `${state.duration}ms` }} />
@@ -1168,9 +1168,7 @@ function PrizeWinner({ title, winner }) {
       {winner ? (
         <>
           <h3>{winner.full_name}</h3>
-          <p>
-            {winner.phone} · {winner.email} · {winner.possibilities} posibilidades
-          </p>
+          <p>{winner.phone}</p>
         </>
       ) : (
         <p>No hay suficientes participantes para asignar este premio.</p>
