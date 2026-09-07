@@ -479,9 +479,12 @@ function App() {
     return (
       <main className="admin-screen">
         <header className="admin-header">
-          <div>
-            <span>Altius de Chamisero</span>
-            <h1>Panel de referidos</h1>
+          <div className="admin-header-brand">
+            <LogoMark />
+            <div>
+              <span>Gestión del sorteo</span>
+              <h1>Panel de referidos</h1>
+            </div>
           </div>
           <button className="admin-home-link" onClick={openFront}>
             Inicio
@@ -809,13 +812,11 @@ function AdminPanel({
   if (!adminUnlocked) {
     return (
       <form className="admin-login-card" onSubmit={unlockAdmin}>
-        <div className="admin-login-mark">
-          <Lock size={24} />
-        </div>
+        <LogoMark />
         <div className="admin-login-copy">
           <span>Acceso privado</span>
           <h2>Ingresar al panel</h2>
-          <p>Usa las credenciales del equipo para revisar participantes y referidos.</p>
+          <p>Ingresa las credenciales para revisar participantes, referidos y posibilidades.</p>
         </div>
         <div className="admin-login-fields">
           <Field label="Usuario" value={username} onChange={setUsername} required />
