@@ -534,8 +534,8 @@ function RegistrationPage({ children }) {
       <header className="registration-hero">
         <LogoMark />
         <div className="registration-title-block">
-          <span>Sorteo exclusivo</span>
-          <h1 className="registration-title">Regístrate y participa</h1>
+          <span>Regístrate y participa</span>
+          <h1 className="registration-title">Sorteo</h1>
         </div>
       </header>
 
