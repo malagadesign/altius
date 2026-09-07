@@ -570,7 +570,8 @@ function RegistrationPage({ children }) {
         {children}
 
         <p className="registration-legal">
-          El sorteo se realizará el martes 8 de septiembre. Consulta las bases y condiciones.
+          Se realizará el martes 8 de septiembre a las 20:30 hrs. durante el evento de
+          Olivos de Chamisero.
         </p>
       </section>
     </main>
