@@ -471,6 +471,14 @@ function App() {
     setView("inscripcion");
   }
 
+  function logoutAdmin() {
+    setAdminUnlocked(false);
+    setPassword("");
+    setUsername("");
+    setWinner(null);
+    setStatus({ type: "", message: "" });
+  }
+
   if (view === "front") {
     return <Landing eventQr={eventQr} onStart={openRegistration} onAdmin={openAdmin} />;
   }
@@ -510,6 +518,7 @@ function App() {
             exportCsv={exportCsv}
             winner={winner}
             setWinner={setWinner}
+            onLogout={logoutAdmin}
           />
         </section>
       </main>
@@ -808,6 +817,7 @@ function AdminPanel({
   exportCsv,
   winner,
   setWinner,
+  onLogout,
 }) {
   if (!adminUnlocked) {
     return (
@@ -853,6 +863,10 @@ function AdminPanel({
         <button onClick={() => setWinner(pickWinner(rows))} disabled={!rows.length}>
           <Trophy size={18} />
           Sortear
+        </button>
+        <button className="ghost-action" onClick={onLogout}>
+          <Lock size={18} />
+          Salir
         </button>
       </div>
       {winner ? (

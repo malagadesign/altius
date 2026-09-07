@@ -463,18 +463,20 @@ button {
   align-items: flex-end;
   justify-content: space-between;
   gap: 18px;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
 }
 
 .admin-panel-title h2 {
   margin: 5px 0 0;
-  font-size: clamp(26px, 3vw, 36px);
+  color: var(--brand-deep);
+  font-size: clamp(28px, 3vw, 38px);
   letter-spacing: 0;
+  line-height: 1.05;
 }
 
 .admin-panel-title p {
   margin: 0;
-  color: #697068;
+  color: #5f654f;
   font-weight: 740;
 }
 
@@ -1011,6 +1013,11 @@ button {
   opacity: 0.55;
 }
 
+.admin-panel {
+  color: var(--brand-deep);
+  background: #fbfaf5;
+}
+
 .empty-state {
   display: grid;
   gap: 12px;
@@ -1116,16 +1123,16 @@ button {
 .metric-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 14px;
 }
 
 .metric {
   display: grid;
-  gap: 6px;
-  padding: 16px;
+  gap: 10px;
+  padding: 20px;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #f8f4ec;
+  border-radius: 12px;
+  background: #f3f0e8;
 }
 
 .metric svg {
@@ -1133,20 +1140,28 @@ button {
 }
 
 .metric span {
-  color: #697068;
-  font-size: 13px;
-  font-weight: 760;
+  color: #5f654f;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .metric strong {
-  font-size: 30px;
+  color: var(--brand-deep);
+  font-size: 38px;
+  line-height: 0.95;
 }
 
 .admin-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin: 18px 0;
+  gap: 12px;
+  margin: 22px 0 28px;
+}
+
+.admin-actions .ghost-action {
+  border: 1px solid rgba(95, 101, 79, 0.24);
+  color: var(--brand);
+  background: transparent;
 }
 
 .winner-card {
@@ -1170,17 +1185,19 @@ button {
 .admin-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.85fr);
-  gap: 14px;
+  gap: 18px;
 }
 
 .table-card {
   overflow: hidden;
+  color: var(--brand-deep);
+  background: #fffdf8;
 }
 
 .search-box {
   position: relative;
   display: block;
-  padding: 14px;
+  padding: 16px;
   border-bottom: 1px solid #e3dccd;
 }
 
@@ -1193,6 +1210,9 @@ button {
 
 .search-box input {
   padding-left: 42px;
+  color: var(--brand-deep);
+  background: #fff;
+  font-size: 16px;
 }
 
 .table-wrap {
@@ -1203,21 +1223,22 @@ table {
   width: 100%;
   min-width: 560px;
   border-collapse: collapse;
-  background: var(--paper);
+  background: #fffdf8;
 }
 
 th,
 td {
-  padding: 14px;
+  padding: 16px 18px;
   border-bottom: 1px solid #e8e0d1;
   text-align: left;
   vertical-align: top;
 }
 
 th {
-  color: #626961;
-  background: #f8f4ec;
+  color: #5f654f;
+  background: #f3f0e8;
   font-size: 13px;
+  font-weight: 700;
 }
 
 tbody tr {
@@ -1225,14 +1246,24 @@ tbody tr {
 }
 
 tbody tr.selected {
-  background: #f1eadb;
+  background: #e9e2d3;
+}
+
+td {
+  color: var(--brand-deep);
+  font-weight: 500;
+}
+
+td strong {
+  color: var(--brand-deep);
 }
 
 td span {
   display: block;
   margin-top: 4px;
-  color: #747a73;
+  color: #5f654f;
   font-size: 13px;
+  font-weight: 500;
 }
 
 .empty-cell {
@@ -1244,6 +1275,18 @@ td span {
   align-self: start;
   position: sticky;
   top: 24px;
+  color: var(--brand-deep);
+  background: #fffdf8;
+}
+
+.detail-card > span {
+  color: var(--accent);
+}
+
+.detail-card h3 {
+  color: var(--brand-deep);
+  font-size: 26px;
+  line-height: 1.1;
 }
 
 .detail-card dl {
@@ -1258,7 +1301,7 @@ td span {
 }
 
 .detail-card dt {
-  color: #747a73;
+  color: #5f654f;
   font-size: 12px;
   font-weight: 850;
   text-transform: uppercase;
@@ -1266,12 +1309,14 @@ td span {
 
 .detail-card dd {
   margin: 0;
+  color: var(--brand-deep);
   word-break: break-word;
 }
 
 .detail-referrals {
   display: grid;
   gap: 10px;
+  color: var(--brand-deep);
 }
 
 @media (max-width: 1020px) {
