@@ -37,8 +37,11 @@ Para Vercel, cargar las mismas variables:
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `ADMIN_USERNAME`
 - `ADMIN_PASSWORD`
+- `ALLOW_TEST_DATA_RESET`
 
 El formulario público usa endpoints de servidor para validar duplicados e insertar registros en Supabase. El tablero recupera solo la información del token personal y el panel interno lee datos mediante `/api/admin-data`, protegido por `ADMIN_USERNAME`, `ADMIN_PASSWORD` y la service role key del servidor.
+
+Durante las pruebas, `ALLOW_TEST_DATA_RESET=true` habilita en el admin el borrado de todos los registros actuales. Para el evento real debe quedar en `false` o sin configurar.
 
 ## URLs
 

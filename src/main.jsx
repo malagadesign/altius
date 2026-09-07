@@ -10,6 +10,7 @@ import {
   RefreshCw,
   Search,
   Ticket,
+  Trash2,
   Trophy,
   Users,
 } from "lucide-react";
@@ -233,7 +234,7 @@ async function fetchParticipantDashboard(token) {
 }
 
 async function fetchAdminEntries(username, password) {
-  if (supabase && password) {
+  if (supabase && password && shouldUseServerApi()) {
     const response = await fetch("/api/admin-data", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -241,7 +242,7 @@ async function fetchAdminEntries(username, password) {
     });
 
     if (!response.ok) throw new Error("Admin data unavailable");
-    return response.json();
+    return data;
   }
 
   if (username !== demoAdminUsername || password !== demoAdminPassword) {
@@ -249,6 +250,32 @@ async function fetchAdminEntries(username, password) {
   }
 
   return readDemoData();
+}
+
+async function clearTestEntries(username, password) {
+  if (supabase && password && shouldUseServerApi()) {
+    const response = await fetch("/api/clear-test-data", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password, confirmation: "ELIMINAR PRUEBAS" }),
+    });
+
+    const data = await response.json().catch(() => null);
+    if (!response.ok) {
+      const error = new Error("Could not clear test entries");
+      error.code = data?.code;
+      throw error;
+    }
+    return response.json();
+  }
+
+  if (username !== demoAdminUsername || password !== demoAdminPassword) {
+    throw new Error("Invalid admin credentials");
+  }
+
+  const emptyData = { participants: [], referrals: [] };
+  writeDemoData(emptyData);
+  return emptyData;
 }
 
 function buildRows(participants, referrals) {
@@ -365,6 +392,35 @@ function App() {
   async function refreshAdminEntries() {
     const data = await fetchAdminEntries(username, password);
     setEntries(data);
+  }
+
+  async function clearAdminTestEntries() {
+    const confirmed = window.confirm(
+      "Esto eliminará todos los participantes y referidos de prueba. ¿Quieres continuar?",
+    );
+
+    if (!confirmed) return;
+
+    setLoading(true);
+    setStatus({ type: "", message: "" });
+
+    try {
+      const data = await clearTestEntries(username, password);
+      setEntries(data);
+      setSelectedId("");
+      setDrawResult(null);
+      setStatus({ type: "success", message: "Registros de prueba eliminados." });
+    } catch (error) {
+      setStatus({
+        type: "error",
+        message:
+          error.code === "reset_disabled"
+            ? "La limpieza de pruebas no está habilitada en Vercel."
+            : "No se pudieron eliminar los registros de prueba.",
+      });
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function refreshParticipant(token = currentParticipant?.public_token) {
@@ -541,10 +597,12 @@ function App() {
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
             refreshAdminEntries={refreshAdminEntries}
+            clearAdminTestEntries={clearAdminTestEntries}
             exportCsv={exportCsv}
             drawResult={drawResult}
             setDrawResult={setDrawResult}
             onLogout={logoutAdmin}
+            loading={loading}
           />
         </section>
       </main>
@@ -840,10 +898,12 @@ function AdminPanel({
   searchTerm,
   setSearchTerm,
   refreshAdminEntries,
+  clearAdminTestEntries,
   exportCsv,
   drawResult,
   setDrawResult,
   onLogout,
+  loading,
 }) {
   if (!adminUnlocked) {
     return (
@@ -893,6 +953,14 @@ function AdminPanel({
         <button onClick={() => setDrawResult(runPrizeDraw(rows))} disabled={!rows.length}>
           <Trophy size={18} />
           Simular sorteo
+        </button>
+        <button
+          className="danger-action"
+          onClick={clearAdminTestEntries}
+          disabled={loading || !rows.length}
+        >
+          <Trash2 size={18} />
+          Eliminar pruebas
         </button>
         <button className="ghost-action" onClick={onLogout}>
           <LogOut size={18} />
