@@ -365,15 +365,18 @@ button {
 .admin-panel-title span,
 .admin-login-copy span {
   color: var(--accent);
-  font-size: 12px;
-  font-weight: 860;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .admin-header h1 {
   margin: 4px 0 0;
+  font-family: var(--font-heading);
   font-size: clamp(24px, 3.3vw, 38px);
+  font-weight: 300;
   line-height: 1;
   letter-spacing: 0;
 }
@@ -385,7 +388,7 @@ button {
   border-radius: 8px;
   color: #fffaf0;
   background: rgba(255, 255, 255, 0.08);
-  font-weight: 780;
+  font-weight: 400;
 }
 
 .admin-container {
@@ -424,6 +427,7 @@ button {
   margin: 8px 0 10px;
   color: var(--brand-deep);
   font-size: clamp(28px, 3.4vw, 34px);
+  font-weight: 400;
   letter-spacing: 0;
   line-height: 1.03;
 }
@@ -456,6 +460,7 @@ button {
   min-height: 58px;
   border-radius: 10px;
   font-size: 17px;
+  font-weight: 400;
 }
 
 .admin-panel-title {
@@ -469,7 +474,9 @@ button {
 .admin-panel-title h2 {
   margin: 5px 0 0;
   color: var(--brand-deep);
+  font-family: var(--font-heading);
   font-size: clamp(28px, 3vw, 38px);
+  font-weight: 300;
   letter-spacing: 0;
   line-height: 1.05;
 }
@@ -477,7 +484,7 @@ button {
 .admin-panel-title p {
   margin: 0;
   color: #5f654f;
-  font-weight: 740;
+  font-weight: 400;
 }
 
 .registration-screen {
@@ -1142,7 +1149,7 @@ button {
 .metric span {
   color: #5f654f;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .metric strong {
@@ -1156,6 +1163,10 @@ button {
   flex-wrap: wrap;
   gap: 12px;
   margin: 22px 0 28px;
+}
+
+.admin-actions button {
+  font-weight: 400;
 }
 
 .admin-actions .ghost-action {
@@ -1186,6 +1197,7 @@ button {
 .test-mode-banner strong {
   color: var(--brand);
   font-size: 16px;
+  font-weight: 400;
 }
 
 .test-mode-banner span {
@@ -1206,6 +1218,10 @@ button {
 
 .winner-card > span {
   color: var(--brand);
+  font-family: var(--font-body);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .winner-grid {
@@ -1224,10 +1240,10 @@ button {
 
 .prize-winner span {
   color: var(--accent);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .prize-winner h3 {
@@ -1299,7 +1315,7 @@ th {
   color: #5f654f;
   background: #f3f0e8;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 400;
 }
 
 tbody tr {
@@ -1342,11 +1358,16 @@ td span {
 
 .detail-card > span {
   color: var(--accent);
+  font-family: var(--font-body);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .detail-card h3 {
   color: var(--brand-deep);
   font-size: 26px;
+  font-weight: 400;
   line-height: 1.1;
 }
 
@@ -1363,9 +1384,9 @@ td span {
 
 .detail-card dt {
   color: #5f654f;
-  font-size: 12px;
-  font-weight: 850;
-  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 400;
+  text-transform: none;
 }
 
 .detail-card dd {
@@ -1378,6 +1399,10 @@ td span {
   display: grid;
   gap: 10px;
   color: var(--brand-deep);
+}
+
+.detail-referrals > strong {
+  font-weight: 400;
 }
 
 @media (max-width: 1020px) {
