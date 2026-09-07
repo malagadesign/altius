@@ -1,17 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
-import {
-  ArrowRight,
-  Download,
-  Lock,
-  Plus,
-  QrCode,
-  RefreshCw,
-  Search,
-  Ticket,
-  Trophy,
-  Users,
-} from "lucide-react";
+import { ArrowRight, Download, Lock, Plus, QrCode, RefreshCw, Search, Ticket, Trophy, Users } from "lucide-react";
 import QRCode from "qrcode";
 import { createClient } from "@supabase/supabase-js";
 import "./styles.css";
@@ -26,16 +15,17 @@ const demoAdminPassword = import.meta.env.VITE_ADMIN_PASSWORD || "admin";
 const demoKey = "altius-referidos-demo-v2";
 const sessionKey = "altius-current-token";
 const eventPath = "/";
+const duplicateContactMessage = "Esta persona ya fue registrada con ese nombre, teléfono o email.";
 
 const initialParticipant = {
   full_name: "",
-  phone: "",
+  phone: "+56 ",
   email: "",
 };
 
 const initialReferral = {
   full_name: "",
-  phone: "",
+  phone: "+56 ",
   email: "",
 };
 
@@ -69,7 +59,54 @@ function writeDemoData(data) {
 }
 
 function normalizePhone(value) {
-  return value.replace(/[^\d+]/g, "").trim();
+  const clean = String(value || "").replace(/[^\d+]/g, "").trim();
+  const digits = clean.replace(/\D/g, "");
+
+  if (!digits) return "+56";
+  if (digits.startsWith("56")) return `+${digits}`;
+  if (digits.startsWith("0")) return `+56${digits.slice(1)}`;
+  return `+56${digits}`;
+}
+
+function normalizeName(value) {
+  return String(value || "").trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function normalizeEmail(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function formatPhoneInput(value) {
+  if (!value || !value.trim()) return "+56 ";
+  if (value.trim() === "+") return "+56 ";
+  return value.startsWith("+56") ? value : normalizePhone(value);
+}
+
+function isValidChilePhone(value) {
+  return normalizePhone(value).replace(/\D/g, "").length >= 10;
+}
+
+function shouldUseServerApi() {
+  return !["localhost", "127.0.0.1"].includes(window.location.hostname);
+}
+
+function findDuplicateContact(data, payload) {
+  const targetName = normalizeName(payload.full_name);
+  const targetPhone = normalizePhone(payload.phone);
+  const targetEmail = normalizeEmail(payload.email);
+  const contacts = [...(data.participants || []), ...(data.referrals || [])];
+
+  return contacts.find((contact) => {
+    return (
+      normalizeName(contact.full_name) === targetName ||
+      normalizePhone(contact.phone) === targetPhone ||
+      normalizeEmail(contact.email) === targetEmail
+    );
+  });
+}
+
+function getDuplicateMessage() {
+  return duplicateContactMessage;
 }
 
 function formatDate(value) {
@@ -86,15 +123,31 @@ async function createParticipant(payload) {
     ...payload,
     public_token: createToken(),
     phone: normalizePhone(payload.phone),
+    full_name: String(payload.full_name || "").trim(),
+    email: normalizeEmail(payload.email),
   };
 
-  if (supabase) {
-    const { error } = await supabase.from("participants").insert(participant);
-    if (error) throw error;
-    return { ...participant, created_at: new Date().toISOString() };
+  if (supabase && shouldUseServerApi()) {
+    const response = await fetch("/api/register-participant", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(participant),
+    });
+      const data = await response.json().catch(() => null);
+      if (!response.ok) {
+        const error = new Error(data?.message || "No se pudo registrar la inscripción.");
+        error.code = data?.code;
+      throw error;
+    }
+    return data.participant;
   }
 
   const data = readDemoData();
+  if (findDuplicateContact(data, participant)) {
+    const error = new Error(getDuplicateMessage());
+    error.code = "duplicate_contact";
+    throw error;
+  }
   const record = {
     id,
     ...participant,
@@ -112,15 +165,31 @@ async function createReferral(participantId, payload) {
     ...payload,
     participant_id: participantId,
     phone: normalizePhone(payload.phone),
+    full_name: String(payload.full_name || "").trim(),
+    email: normalizeEmail(payload.email),
   };
 
-  if (supabase) {
-    const { error } = await supabase.from("referrals").insert(referral);
-    if (error) throw error;
-    return { ...referral, created_at: new Date().toISOString() };
+  if (supabase && shouldUseServerApi()) {
+    const response = await fetch("/api/register-referral", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(referral),
+    });
+      const data = await response.json().catch(() => null);
+      if (!response.ok) {
+        const error = new Error(data?.message || "No se pudo guardar el referido.");
+        error.code = data?.code;
+      throw error;
+    }
+    return data.referral;
   }
 
   const data = readDemoData();
+  if (findDuplicateContact(data, referral)) {
+    const error = new Error(getDuplicateMessage());
+    error.code = "duplicate_contact";
+    throw error;
+  }
   const record = {
     id,
     ...referral,
@@ -305,6 +374,13 @@ function App() {
 
   async function handleParticipantSubmit(event) {
     event.preventDefault();
+    if (!isValidChilePhone(participant.phone)) {
+      setStatus({
+        type: "error",
+        message: "Ingresa un teléfono válido con prefijo +56.",
+      });
+      return;
+    }
     setLoading(true);
     setStatus({ type: "", message: "" });
 
@@ -320,10 +396,13 @@ function App() {
         type: "success",
         message: "Inscripción registrada. Ya participas con 1 posibilidad.",
       });
-    } catch {
+    } catch (error) {
+      const duplicated = error.code === "duplicate_contact" || error.code === "23505";
       setStatus({
         type: "error",
-        message: "No se pudo registrar la inscripción. Probemos de nuevo.",
+        message: duplicated
+          ? getDuplicateMessage()
+          : "No se pudo registrar la inscripción. Inténtalo nuevamente.",
       });
     } finally {
       setLoading(false);
@@ -333,6 +412,13 @@ function App() {
   async function handleReferralSubmit(event) {
     event.preventDefault();
     if (!currentParticipant) return;
+    if (!isValidChilePhone(referral.phone)) {
+      setStatus({
+        type: "error",
+        message: "Ingresa un teléfono válido con prefijo +56.",
+      });
+      return;
+    }
     setLoading(true);
     setStatus({ type: "", message: "" });
 
@@ -344,10 +430,13 @@ function App() {
         type: "success",
         message: "Referido agregado. Sumaste 1 posibilidad extra.",
       });
-    } catch {
+    } catch (error) {
+      const duplicated = error.code === "duplicate_contact" || error.code === "23505";
       setStatus({
         type: "error",
-        message: "No se pudo guardar el referido. Revisemos los datos.",
+        message: duplicated
+          ? getDuplicateMessage()
+          : "No se pudo guardar el referido. Revisa los datos e inténtalo nuevamente.",
       });
     } finally {
       setLoading(false);
@@ -445,7 +534,7 @@ function App() {
         {status.message ? <p className={`notice ${status.type}`}>{status.message}</p> : null}
         {!supabase ? (
           <p className="notice subtle">
-            Modo demo local activo. Cuando conectemos Supabase, los datos quedan centralizados.
+            Modo demo local activo. Al conectar Supabase, los datos quedan centralizados.
           </p>
         ) : null}
         <RegistrationForm
@@ -458,72 +547,7 @@ function App() {
     );
   }
 
-  return (
-    <main className="app-shell">
-      <section className="brand-panel">
-        <LogoMark />
-        <div className="event-card">
-          <span>Sorteo evento · martes 8 de septiembre</span>
-          <h1>Sorteo Altius</h1>
-          <div className="prize-list">
-            <span>Premio principal: parrilla</span>
-            <span>Premio de consuelo: set parrillero</span>
-          </div>
-          <p>
-            Inscribite escaneando el QR del evento y suma mas posibilidades cargando
-            referidos interesados en el proyecto.
-          </p>
-          <div className="event-stats">
-            <strong>1</strong>
-            <span>posibilidad por inscripción</span>
-            <strong>+1</strong>
-            <span>por cada referido</span>
-          </div>
-        </div>
-        <button className="admin-link" onClick={openAdmin}>
-          <Lock size={16} />
-          Panel cliente
-        </button>
-      </section>
-
-      <section className="workspace">
-        {currentParticipant ? (
-          <nav className="tabs" aria-label="Secciones">
-            <button
-              className={view === "inscripcion" ? "active" : ""}
-              onClick={() => setView("inscripcion")}
-            >
-              <Ticket size={18} />
-              Inscripción
-            </button>
-            <button
-              className={view === "mi-tablero" ? "active" : ""}
-              onClick={() => setView("mi-tablero")}
-            >
-              <LayoutDashboard size={18} />
-              Mi tablero
-            </button>
-          </nav>
-        ) : null}
-
-        {status.message ? <p className={`notice ${status.type}`}>{status.message}</p> : null}
-
-        {view === "mi-tablero" ? (
-          <ParticipantDashboard
-            participant={currentParticipant}
-            referrals={currentReferrals}
-            referral={referral}
-            setReferral={setReferral}
-            loading={loading}
-            status={status}
-            onSubmit={handleReferralSubmit}
-            onRegister={() => setView("inscripcion")}
-          />
-        ) : null}
-
-      </section>
-    </main>
-  );
+  return null;
 }
 
 function RegistrationPage({ children }) {
@@ -603,7 +627,7 @@ function Landing({ eventQr, onStart, onAdmin }) {
           <QrCode size={34} />
           <span>Escanea para participar</span>
           {eventQr ? <img src={eventQr} alt="QR para abrir el registro del sorteo" /> : null}
-          <p>El registro se abre en el celular y toma menos de un minuto.</p>
+          <p>El registro se abre en el teléfono y toma menos de un minuto.</p>
           <button type="button" onClick={onStart}>
             Abrir registro
             <ArrowRight size={18} />
@@ -632,7 +656,7 @@ function RegistrationForm({ participant, setParticipant, loading, onSubmit }) {
       <div className="section-heading">
         <div>
           <h2>Tus datos</h2>
-          <p>Completa el registro y después podrás sumar referidos.</p>
+          <p>Completa el registro y luego podrás sumar referidos.</p>
         </div>
       </div>
 
@@ -645,7 +669,7 @@ function RegistrationForm({ participant, setParticipant, loading, onSubmit }) {
       <Field
         label="Teléfono"
         value={participant.phone}
-        onChange={(phone) => setParticipant({ ...participant, phone })}
+        onChange={(phone) => setParticipant({ ...participant, phone: formatPhoneInput(phone) })}
         required
         inputMode="tel"
       />
@@ -717,7 +741,7 @@ function ParticipantDashboard({
           <div className="section-heading">
             <div>
               <h2>Sumar referido</h2>
-              <p>Cada contacto cargado suma una posibilidad extra para el sorteo.</p>
+              <p>Cada contacto agregado suma una posibilidad extra para el sorteo.</p>
             </div>
           </div>
           <Field
@@ -729,7 +753,7 @@ function ParticipantDashboard({
           <Field
             label="Teléfono referido"
             value={referral.phone}
-            onChange={(phone) => setReferral({ ...referral, phone })}
+            onChange={(phone) => setReferral({ ...referral, phone: formatPhoneInput(phone) })}
             required
             inputMode="tel"
           />
@@ -755,7 +779,7 @@ function ParticipantDashboard({
               </div>
             ))
           ) : (
-            <p className="muted">Cuando cargues referidos, van a aparecer acá.</p>
+            <p className="muted">Cuando agregues referidos, aparecerán acá.</p>
           )}
         </section>
       </section>
@@ -845,7 +869,7 @@ function AdminPanel({
             <Search size={18} />
             <input
               value={searchTerm}
-              placeholder="Buscar por nombre, telefono o email"
+              placeholder="Buscar por nombre, teléfono o email"
               onChange={(event) => setSearchTerm(event.target.value)}
             />
           </label>
@@ -929,7 +953,7 @@ function ParticipantDetail({ row }) {
             </div>
           ))
         ) : (
-          <p className="muted">Sin referidos cargados.</p>
+          <p className="muted">Sin referidos agregados.</p>
         )}
       </div>
     </aside>
