@@ -28,7 +28,7 @@ const demoAdminPassword = import.meta.env.VITE_ADMIN_PASSWORD || "admin";
 const demoKey = "altius-referidos-demo-v2";
 const sessionKey = "altius-current-token";
 const eventPath = "/";
-const duplicateContactMessage = "Esta persona ya fue registrada con ese nombre, teléfono o email.";
+const duplicateContactMessage = "Esta persona ya fue registrada con ese teléfono o email.";
 
 const initialParticipant = {
   full_name: "",
@@ -81,10 +81,6 @@ function normalizePhone(value) {
   return `+56${digits}`;
 }
 
-function normalizeName(value) {
-  return String(value || "").trim().replace(/\s+/g, " ").toLowerCase();
-}
-
 function normalizeEmail(value) {
   return String(value || "").trim().toLowerCase();
 }
@@ -104,14 +100,12 @@ function shouldUseServerApi() {
 }
 
 function findDuplicateContact(data, payload) {
-  const targetName = normalizeName(payload.full_name);
   const targetPhone = normalizePhone(payload.phone);
   const targetEmail = normalizeEmail(payload.email);
   const contacts = [...(data.participants || []), ...(data.referrals || [])];
 
   return contacts.find((contact) => {
     return (
-      normalizeName(contact.full_name) === targetName ||
       normalizePhone(contact.phone) === targetPhone ||
       normalizeEmail(contact.email) === targetEmail
     );

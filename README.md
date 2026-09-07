@@ -9,7 +9,7 @@ Webapp para capturar participantes de un sorteo y sumar posibilidades por referi
 - La inscripción base suma 1 posibilidad.
 - Cada referido agregado suma 1 posibilidad adicional.
 - Los teléfonos se registran con prefijo chileno `+56`.
-- Si un nombre, teléfono o email ya existe, el sistema bloquea el nuevo registro.
+- Si un teléfono o email ya existe, el sistema bloquea el nuevo registro.
 - Cada participante recibe un link personal para volver a su tablero.
 - El panel interno permite revisar participantes, exportar CSV y sortear con posibilidades ponderadas.
 
@@ -28,6 +28,8 @@ Ejecutar el SQL de `supabase/schema.sql` en el SQL Editor de Supabase.
 Si ya se había ejecutado una versión anterior con comuna o RUT, ejecutar primero `supabase/update-2026-09-06.sql`.
 
 Para bloquear duplicados también desde la base, ejecutar después `supabase/update-2026-09-07-dedupe.sql`.
+
+Si ya se había aplicado la validación por nombre, ejecutar `supabase/update-2026-09-07-phone-email-dedupe.sql` para validar solo teléfono y email.
 
 Para Vercel, cargar las mismas variables:
 

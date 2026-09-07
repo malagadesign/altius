@@ -1,7 +1,3 @@
-export function normalizeName(value) {
-  return String(value || "").trim().replace(/\s+/g, " ").toLowerCase();
-}
-
 export function normalizeEmail(value) {
   return String(value || "").trim().toLowerCase();
 }
@@ -25,13 +21,11 @@ export function sanitizeContact(payload) {
 }
 
 export function hasDuplicateContact(contacts, payload) {
-  const targetName = normalizeName(payload.full_name);
   const targetPhone = normalizePhone(payload.phone);
   const targetEmail = normalizeEmail(payload.email);
 
   return contacts.some((contact) => {
     return (
-      normalizeName(contact.full_name) === targetName ||
       normalizePhone(contact.phone) === targetPhone ||
       normalizeEmail(contact.email) === targetEmail
     );

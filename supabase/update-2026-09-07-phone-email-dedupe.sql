@@ -45,13 +45,3 @@ begin
   return new;
 end;
 $$;
-
-drop trigger if exists participants_prevent_duplicate_contact on public.participants;
-create trigger participants_prevent_duplicate_contact
-before insert on public.participants
-for each row execute function public.prevent_duplicate_contact();
-
-drop trigger if exists referrals_prevent_duplicate_contact on public.referrals;
-create trigger referrals_prevent_duplicate_contact
-before insert on public.referrals
-for each row execute function public.prevent_duplicate_contact();

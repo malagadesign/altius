@@ -4,7 +4,7 @@ import { hasDuplicateContact, loadContactIndex, sanitizeContact } from "./contac
 function sendDuplicate(response) {
   response.status(409).json({
     code: "duplicate_contact",
-    message: "Esta persona ya fue registrada con ese nombre, teléfono o email.",
+    message: "Esta persona ya fue registrada con ese teléfono o email.",
   });
 }
 
