@@ -2,9 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   ArrowRight,
-  Clipboard,
   Download,
-  LayoutDashboard,
   Lock,
   Plus,
   QrCode,
@@ -12,7 +10,6 @@ import {
   Search,
   Ticket,
   Trophy,
-  UserPlus,
   Users,
 } from "lucide-react";
 import QRCode from "qrcode";
@@ -28,7 +25,7 @@ const demoAdminPassword = import.meta.env.VITE_ADMIN_PASSWORD || "admin";
 
 const demoKey = "altius-referidos-demo-v2";
 const sessionKey = "altius-current-token";
-const eventPath = "/?registro=1";
+const eventPath = "/";
 
 const initialParticipant = {
   full_name: "",
@@ -195,7 +192,7 @@ function pickWinner(rows) {
 function exportCsv(rows) {
   const headers = [
     "Nombre",
-    "Telefono",
+    "Teléfono",
     "Email",
     "Referidos",
     "Posibilidades",
@@ -228,7 +225,7 @@ function exportCsv(rows) {
 }
 
 function App() {
-  const [view, setView] = useState("front");
+  const [view, setView] = useState("inscripcion");
   const [participant, setParticipant] = useState(initialParticipant);
   const [referral, setReferral] = useState(initialReferral);
   const [currentParticipant, setCurrentParticipant] = useState(null);
@@ -241,7 +238,6 @@ function App() {
   const [username, setUsername] = useState("");
   const [winner, setWinner] = useState(null);
   const [eventQr, setEventQr] = useState("");
-  const [personalQr, setPersonalQr] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedId, setSelectedId] = useState("");
 
@@ -289,7 +285,7 @@ function App() {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("participante");
     const adminMode = params.get("admin") === "1";
-    const registrationMode = params.get("registro") === "1" || params.get("ingreso") === "qr";
+    const qrMode = params.get("qr") === "1";
     QRCode.toDataURL(getEventUrl(), { margin: 1, width: 220 }).then(setEventQr);
 
     if (adminMode) {
@@ -298,20 +294,14 @@ function App() {
       refreshParticipant(token)
         .then(() => setView("mi-tablero"))
         .catch(() => setView("inscripcion"));
-    } else if (registrationMode) {
+    } else if (qrMode) {
+      setView("front");
+    } else {
       setView("inscripcion");
     }
 
     if (!supabase) setEntries(readDemoData());
   }, []);
-
-  useEffect(() => {
-    if (!currentParticipant?.public_token) return;
-    QRCode.toDataURL(getPersonalUrl(currentParticipant.public_token), {
-      margin: 1,
-      width: 220,
-    }).then(setPersonalQr);
-  }, [currentParticipant?.public_token]);
 
   async function handleParticipantSubmit(event) {
     event.preventDefault();
@@ -328,12 +318,12 @@ function App() {
       setView("mi-tablero");
       setStatus({
         type: "success",
-        message: "Inscripcion registrada. Ya participas con 1 posibilidad.",
+        message: "Inscripción registrada. Ya participas con 1 posibilidad.",
       });
     } catch {
       setStatus({
         type: "error",
-        message: "No se pudo registrar la inscripcion. Probemos de nuevo.",
+        message: "No se pudo registrar la inscripción. Probemos de nuevo.",
       });
     } finally {
       setLoading(false);
@@ -376,12 +366,6 @@ function App() {
       });
   }
 
-  function copyPersonalLink() {
-    if (!currentParticipant?.public_token) return;
-    navigator.clipboard.writeText(getPersonalUrl(currentParticipant.public_token));
-    setStatus({ type: "success", message: "Link personal copiado." });
-  }
-
   function openRegistration() {
     window.history.pushState({}, "", eventPath);
     setView("inscripcion");
@@ -395,7 +379,7 @@ function App() {
   function openFront() {
     window.history.pushState({}, "", "/");
     setStatus({ type: "", message: "" });
-    setView("front");
+    setView("inscripcion");
   }
 
   if (view === "front") {
@@ -411,7 +395,7 @@ function App() {
             <h1>Panel de referidos</h1>
           </div>
           <button className="admin-home-link" onClick={openFront}>
-            Ver QR
+            Inicio
           </button>
         </header>
         <section className="admin-container">
@@ -437,6 +421,21 @@ function App() {
           />
         </section>
       </main>
+    );
+  }
+
+  if (view === "mi-tablero") {
+    return (
+      <ParticipantDashboard
+        participant={currentParticipant}
+        referrals={currentReferrals}
+        referral={referral}
+        setReferral={setReferral}
+        loading={loading}
+        status={status}
+        onSubmit={handleReferralSubmit}
+        onRegister={() => setView("inscripcion")}
+      />
     );
   }
 
@@ -476,7 +475,7 @@ function App() {
           </p>
           <div className="event-stats">
             <strong>1</strong>
-            <span>posibilidad por inscripcion</span>
+            <span>posibilidad por inscripción</span>
             <strong>+1</strong>
             <span>por cada referido</span>
           </div>
@@ -495,7 +494,7 @@ function App() {
               onClick={() => setView("inscripcion")}
             >
               <Ticket size={18} />
-              Inscripcion
+              Inscripción
             </button>
             <button
               className={view === "mi-tablero" ? "active" : ""}
@@ -516,9 +515,8 @@ function App() {
             referral={referral}
             setReferral={setReferral}
             loading={loading}
-            personalQr={personalQr}
+            status={status}
             onSubmit={handleReferralSubmit}
-            onCopy={copyPersonalLink}
             onRegister={() => setView("inscripcion")}
           />
         ) : null}
@@ -594,7 +592,7 @@ function Landing({ eventQr, onStart, onAdmin }) {
         </div>
         <div className="event-stats">
           <strong>1</strong>
-          <span>posibilidad por inscripcion</span>
+          <span>posibilidad por inscripción</span>
           <strong>+1</strong>
           <span>por cada referido</span>
         </div>
@@ -645,7 +643,7 @@ function RegistrationForm({ participant, setParticipant, loading, onSubmit }) {
         required
       />
       <Field
-        label="Telefono"
+        label="Teléfono"
         value={participant.phone}
         onChange={(phone) => setParticipant({ ...participant, phone })}
         required
@@ -677,18 +675,17 @@ function ParticipantDashboard({
   referral,
   setReferral,
   loading,
-  personalQr,
+  status,
   onSubmit,
-  onCopy,
   onRegister,
 }) {
   if (!participant) {
     return (
       <div className="form-panel">
         <div className="empty-state">
-          Todavia no hay un titular asociado a este dispositivo.
+          Todavía no hay un titular asociado a este dispositivo.
           <button type="button" onClick={onRegister}>
-            Crear inscripcion
+            Crear inscripción
           </button>
         </div>
       </div>
@@ -696,83 +693,73 @@ function ParticipantDashboard({
   }
 
   const possibilities = 1 + referrals.length;
+  const possibilityLabel = possibilities === 1 ? "posibilidad" : "posibilidades";
 
   return (
-    <div className="participant-grid">
-      <section className="dashboard-card primary">
-        <span>Tu participacion</span>
-        <h2>{participant.full_name}</h2>
-        <div className="possibility-counter">
-          <strong>{possibilities}</strong>
-          <p>{possibilities === 1 ? "posibilidad acumulada" : "posibilidades acumuladas"}</p>
+    <main className="participant-screen">
+      <header className="participant-hero">
+        <LogoMark />
+        <div className="participant-summary">
+          <span>{participant.full_name}</span>
+          <h1>
+            Ya participas con:
+            <strong>
+              {possibilities} {possibilityLabel}
+            </strong>
+          </h1>
         </div>
-        <div className="mini-metrics">
-          <span>1 inscripcion</span>
-          <span>{referrals.length} referidos</span>
-        </div>
-      </section>
+      </header>
 
-      <section className="dashboard-card qr-card">
-        <div>
-          <span>Link personal</span>
-          <h3>Volver a tu tablero</h3>
-          <p>Este QR permite recuperar tus posibilidades y seguir sumando referidos.</p>
-        </div>
-        {personalQr ? <img src={personalQr} alt="QR personal del participante" /> : null}
-        <button type="button" onClick={onCopy}>
-          <Clipboard size={18} />
-          Copiar link
-        </button>
-      </section>
+      <section className="participant-content">
+        {status.message ? <p className={`notice ${status.type}`}>{status.message}</p> : null}
 
-      <form className="form-panel referral-form" onSubmit={onSubmit}>
-        <div className="section-heading">
-          <UserPlus size={22} />
-          <div>
-            <h2>Sumar referido</h2>
-            <p>Cada contacto cargado suma una posibilidad extra para el sorteo.</p>
-          </div>
-        </div>
-        <Field
-          label="Nombre referido"
-          value={referral.full_name}
-          onChange={(full_name) => setReferral({ ...referral, full_name })}
-          required
-        />
-        <Field
-          label="Telefono referido"
-          value={referral.phone}
-          onChange={(phone) => setReferral({ ...referral, phone })}
-          required
-          inputMode="tel"
-        />
-        <Field
-          label="Email referido"
-          value={referral.email}
-          onChange={(email) => setReferral({ ...referral, email })}
-          required
-          type="email"
-        />
-        <button className="primary-action" disabled={loading}>
-          {loading ? "Guardando..." : "Agregar referido"}
-          <Plus size={18} />
-        </button>
-      </form>
-
-      <section className="dashboard-card referral-list">
-        <span>Referidos cargados</span>
-        {referrals.length ? (
-          referrals.map((item) => (
-            <div className="referral-item" key={item.id}>
-              <strong>{item.full_name}</strong>
-              <small>{item.phone}</small>
+        <form className="participant-card referral-form" onSubmit={onSubmit}>
+          <div className="section-heading">
+            <div>
+              <h2>Sumar referido</h2>
+              <p>Cada contacto cargado suma una posibilidad extra para el sorteo.</p>
             </div>
-          ))
-        ) : (
-          <p className="muted">Cuando cargues referidos, van a aparecer aca.</p>
-        )}
+          </div>
+          <Field
+            label="Nombre referido"
+            value={referral.full_name}
+            onChange={(full_name) => setReferral({ ...referral, full_name })}
+            required
+          />
+          <Field
+            label="Teléfono referido"
+            value={referral.phone}
+            onChange={(phone) => setReferral({ ...referral, phone })}
+            required
+            inputMode="tel"
+          />
+          <Field
+            label="Email referido"
+            value={referral.email}
+            onChange={(email) => setReferral({ ...referral, email })}
+            required
+            type="email"
+          />
+          <button className="primary-action" disabled={loading}>
+            {loading ? "Guardando..." : "Agregar referido +"}
+          </button>
+        </form>
+
+        <section className="participant-card referral-list">
+          <h2>Tus referidos</h2>
+          {referrals.length ? (
+            referrals.map((item) => (
+              <div className="referral-item" key={item.id}>
+                <strong>{item.full_name}</strong>
+                <small>{item.phone}</small>
+              </div>
+            ))
+          ) : (
+            <p className="muted">Cuando cargues referidos, van a aparecer acá.</p>
+          )}
+        </section>
       </section>
-    </div>
+    </main>
   );
 }
 
@@ -889,7 +876,7 @@ function AdminPanel({
                 {!filteredRows.length ? (
                   <tr>
                     <td colSpan="3" className="empty-cell">
-                      Todavia no hay inscripciones.
+                      Todavía no hay inscripciones.
                     </td>
                   </tr>
                 ) : null}
@@ -920,7 +907,7 @@ function ParticipantDetail({ row }) {
       <h3>{row.full_name}</h3>
       <dl>
         <div>
-          <dt>Telefono</dt>
+          <dt>Teléfono</dt>
           <dd>{row.phone}</dd>
         </div>
         <div>
