@@ -1151,11 +1151,9 @@ function DrawModal({ state, onClose }) {
             <div className={`draw-name-window ${isReveal ? "is-reveal" : ""}`}>
               <strong key={state.name}>{state.name}</strong>
             </div>
-            {!isReveal ? (
-              <div className="draw-progress" key={state.phase}>
-                <span style={{ animationDuration: `${state.duration}ms` }} />
-              </div>
-            ) : null}
+            <div className={`draw-progress ${isReveal ? "is-complete" : ""}`} key={state.phase}>
+              <span style={{ animationDuration: `${state.duration}ms` }} />
+            </div>
           </>
         )}
       </section>

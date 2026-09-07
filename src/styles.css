@@ -1284,8 +1284,16 @@ button {
   text-align: center;
 }
 
+.draw-modal .brand-mark {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  backdrop-filter: none;
+}
+
 .draw-modal .brand-mark img {
-  width: 166px;
+  width: 176px;
   filter: brightness(0) saturate(100%) invert(35%) sepia(12%) saturate(644%) hue-rotate(41deg)
     brightness(94%) contrast(88%);
 }
@@ -1314,7 +1322,7 @@ button {
 
 .draw-name-window {
   width: 100%;
-  min-height: 118px;
+  height: 126px;
   display: grid;
   place-items: center;
   padding: 24px;
@@ -1327,10 +1335,12 @@ button {
 
 .draw-name-window strong {
   max-width: 100%;
+  display: block;
   color: inherit;
-  font-size: clamp(32px, 5vw, 52px);
+  font-size: clamp(30px, 5vw, 50px);
   font-weight: 400;
   line-height: 1.03;
+  overflow-wrap: anywhere;
   animation: drawNameTick 0.16s ease;
 }
 
@@ -1359,6 +1369,11 @@ button {
   transform-origin: left;
   background: var(--accent);
   animation: drawProgress linear forwards;
+}
+
+.draw-progress.is-complete span {
+  transform: scaleX(1);
+  animation: none;
 }
 
 .draw-modal-results {
@@ -1817,7 +1832,7 @@ td span {
   }
 
   .draw-name-window {
-    min-height: 96px;
+    height: 104px;
     padding: 18px;
   }
 
