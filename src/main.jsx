@@ -310,6 +310,12 @@ function runPrizeDraw(rows) {
   };
 }
 
+function wait(ms) {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
 function exportCsv(rows) {
   const headers = [
     "Nombre",
@@ -913,6 +919,73 @@ function AdminPanel({
   onLogout,
   loading,
 }) {
+  const [drawRunning, setDrawRunning] = useState(false);
+  const [drawModal, setDrawModal] = useState({
+    open: false,
+    phase: "idle",
+    name: "",
+    duration: 0,
+    result: null,
+  });
+
+  const animatePrizeDraw = (phase, candidates, finalWinner, duration) =>
+    new Promise((resolve) => {
+      const names = candidates.length
+        ? candidates.map((candidate) => candidate.full_name)
+        : ["Sin participantes"];
+      let index = 0;
+
+      setDrawModal({
+        open: true,
+        phase,
+        name: names[0],
+        duration,
+        result: null,
+      });
+
+      const intervalId = window.setInterval(() => {
+        index += 1;
+        setDrawModal((current) => ({
+          ...current,
+          name: names[index % names.length],
+        }));
+      }, 86);
+
+      window.setTimeout(() => {
+        window.clearInterval(intervalId);
+        setDrawModal((current) => ({
+          ...current,
+          phase: `${phase}-reveal`,
+          name: finalWinner?.full_name || "Sin ganador",
+        }));
+        window.setTimeout(resolve, 1150);
+      }, duration);
+    });
+
+  const startAnimatedDraw = async () => {
+    if (!rows.length || drawRunning) return;
+
+    const result = runPrizeDraw(rows);
+    const setCandidates = result.grill
+      ? rows.filter((row) => row.id !== result.grill.id)
+      : rows;
+
+    setDrawRunning(true);
+    setDrawResult(null);
+    await animatePrizeDraw("grill", rows, result.grill, 3000);
+    await wait(240);
+    await animatePrizeDraw("set", setCandidates, result.set, 2600);
+    setDrawResult(result);
+    setDrawModal({
+      open: true,
+      phase: "done",
+      name: "",
+      duration: 0,
+      result,
+    });
+    setDrawRunning(false);
+  };
+
   if (!adminUnlocked) {
     return (
       <form className="admin-login-card" onSubmit={unlockAdmin}>
@@ -932,106 +1005,160 @@ function AdminPanel({
   }
 
   return (
-    <div className="admin-panel">
-      <div className="admin-panel-title">
-        <div>
-          <span>Modo prueba</span>
-          <h2>Registro de participantes</h2>
-        </div>
-        <p>Simulación interna hasta el día del evento.</p>
-      </div>
-      <div className="test-mode-banner">
-        <strong>Sorteo en modo prueba</strong>
-        <span>Los resultados simulados no quedan guardados como definitivos.</span>
-      </div>
-      <div className="metric-grid">
-        <Metric icon={<Users size={20} />} label="Participantes" value={totals.participants} />
-        <Metric icon={<Plus size={20} />} label="Referidos" value={totals.referrals} />
-        <Metric icon={<Ticket size={20} />} label="Posibilidades" value={totals.possibilities} />
-      </div>
-      <div className="admin-actions">
-        <button onClick={() => refreshAdminEntries()}>
-          <RefreshCw size={18} />
-          Actualizar
-        </button>
-        <button onClick={() => exportCsv(rows)} disabled={!rows.length}>
-          <Download size={18} />
-          Exportar CSV
-        </button>
-        <button onClick={() => setDrawResult(runPrizeDraw(rows))} disabled={!rows.length}>
-          <Trophy size={18} />
-          Simular sorteo
-        </button>
-        <button
-          className="danger-action"
-          onClick={clearAdminTestEntries}
-          disabled={loading || !rows.length}
-        >
-          <Trash2 size={18} />
-          Eliminar pruebas
-        </button>
-        <button className="ghost-action" onClick={onLogout}>
-          <LogOut size={18} />
-          Salir
-        </button>
-      </div>
-      {drawResult ? (
-        <div className="winner-card">
-          <span>Resultado de prueba</span>
-          <div className="winner-grid">
-            <PrizeWinner title="Primer premio · Parrilla" winner={drawResult.grill} />
-            <PrizeWinner title="Premio adicional · Set parrillero" winner={drawResult.set} />
+    <>
+      <div className="admin-panel">
+        <div className="admin-panel-title">
+          <div>
+            <span>Modo prueba</span>
+            <h2>Registro de participantes</h2>
           </div>
+          <p>Simulación interna hasta el día del evento.</p>
         </div>
-      ) : null}
-      <div className="admin-layout">
-        <section className="table-card">
-          <label className="search-box">
-            <Search size={18} />
-            <input
-              value={searchTerm}
-              placeholder="Buscar por nombre, teléfono o email"
-              onChange={(event) => setSearchTerm(event.target.value)}
-            />
-          </label>
-          <div className="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Titular</th>
-                  <th>Referidos</th>
-                  <th>Posibilidades</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRows.map((row) => (
-                  <tr
-                    key={row.id}
-                    className={selectedRow?.id === row.id ? "selected" : ""}
-                    onClick={() => setSelectedId(row.id)}
-                  >
-                    <td>
-                      <strong>{row.full_name}</strong>
-                      <span>{row.phone}</span>
-                    </td>
-                    <td>{row.referrals.length}</td>
-                    <td>{row.possibilities}</td>
-                  </tr>
-                ))}
-                {!filteredRows.length ? (
+        <div className="test-mode-banner">
+          <strong>Sorteo en modo prueba</strong>
+          <span>Los resultados simulados no quedan guardados como definitivos.</span>
+        </div>
+        <div className="metric-grid">
+          <Metric icon={<Users size={20} />} label="Participantes" value={totals.participants} />
+          <Metric icon={<Plus size={20} />} label="Referidos" value={totals.referrals} />
+          <Metric icon={<Ticket size={20} />} label="Posibilidades" value={totals.possibilities} />
+        </div>
+        <div className="admin-actions">
+          <button onClick={() => refreshAdminEntries()}>
+            <RefreshCw size={18} />
+            Actualizar
+          </button>
+          <button onClick={() => exportCsv(rows)} disabled={!rows.length}>
+            <Download size={18} />
+            Exportar CSV
+          </button>
+          <button onClick={startAnimatedDraw} disabled={!rows.length || drawRunning}>
+            <Trophy size={18} />
+            {drawRunning ? "Sorteando..." : "Simular sorteo"}
+          </button>
+          <button
+            className="danger-action"
+            onClick={clearAdminTestEntries}
+            disabled={loading || !rows.length || drawRunning}
+          >
+            <Trash2 size={18} />
+            Eliminar pruebas
+          </button>
+          <button className="ghost-action" onClick={onLogout}>
+            <LogOut size={18} />
+            Salir
+          </button>
+        </div>
+        {drawResult ? (
+          <div className="winner-card">
+            <span>Resultado de prueba</span>
+            <div className="winner-grid">
+              <PrizeWinner title="Primer premio · Parrilla" winner={drawResult.grill} />
+              <PrizeWinner title="Premio adicional · Set parrillero" winner={drawResult.set} />
+            </div>
+          </div>
+        ) : null}
+        <div className="admin-layout">
+          <section className="table-card">
+            <label className="search-box">
+              <Search size={18} />
+              <input
+                value={searchTerm}
+                placeholder="Buscar por nombre, teléfono o email"
+                onChange={(event) => setSearchTerm(event.target.value)}
+              />
+            </label>
+            <div className="table-wrap">
+              <table>
+                <thead>
                   <tr>
-                    <td colSpan="3" className="empty-cell">
-                      Todavía no hay inscripciones.
-                    </td>
+                    <th>Titular</th>
+                    <th>Referidos</th>
+                    <th>Posibilidades</th>
                   </tr>
-                ) : null}
-              </tbody>
-            </table>
-          </div>
-        </section>
+                </thead>
+                <tbody>
+                  {filteredRows.map((row) => (
+                    <tr
+                      key={row.id}
+                      className={selectedRow?.id === row.id ? "selected" : ""}
+                      onClick={() => setSelectedId(row.id)}
+                    >
+                      <td>
+                        <strong>{row.full_name}</strong>
+                        <span>{row.phone}</span>
+                      </td>
+                      <td>{row.referrals.length}</td>
+                      <td>{row.possibilities}</td>
+                    </tr>
+                  ))}
+                  {!filteredRows.length ? (
+                    <tr>
+                      <td colSpan="3" className="empty-cell">
+                        Todavía no hay inscripciones.
+                      </td>
+                    </tr>
+                  ) : null}
+                </tbody>
+              </table>
+            </div>
+          </section>
 
-        <ParticipantDetail row={selectedRow} />
+          <ParticipantDetail row={selectedRow} />
+        </div>
       </div>
+      {drawModal.open ? (
+        <DrawModal
+          state={drawModal}
+          onClose={() => setDrawModal((current) => ({ ...current, open: false }))}
+        />
+      ) : null}
+    </>
+  );
+}
+
+function DrawModal({ state, onClose }) {
+  const isDone = state.phase === "done";
+  const isReveal = state.phase.endsWith("-reveal");
+  const isSetPrize = state.phase.startsWith("set");
+  const prizeLabel = isSetPrize ? "Premio adicional · Set parrillero" : "Primer premio · Parrilla";
+  const title = isDone ? "Resultado del sorteo" : isReveal ? "Tenemos ganador" : "Sorteando...";
+
+  return (
+    <div
+      className="draw-modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="draw-modal-title"
+    >
+      <section className={`draw-modal phase-${state.phase}`}>
+        <LogoMark />
+        <span className="draw-modal-kicker">Modo prueba</span>
+        <h2 id="draw-modal-title">{title}</h2>
+        {isDone ? (
+          <>
+            <div className="draw-modal-results">
+              <PrizeWinner title="Primer premio · Parrilla" winner={state.result?.grill} />
+              <PrizeWinner title="Premio adicional · Set parrillero" winner={state.result?.set} />
+            </div>
+            <button className="draw-close" onClick={onClose}>
+              Cerrar
+            </button>
+          </>
+        ) : (
+          <>
+            <p>{prizeLabel}</p>
+            <div className={`draw-name-window ${isReveal ? "is-reveal" : ""}`}>
+              <strong key={state.name}>{state.name}</strong>
+            </div>
+            {!isReveal ? (
+              <div className="draw-progress" key={state.phase}>
+                <span style={{ animationDuration: `${state.duration}ms` }} />
+              </div>
+            ) : null}
+          </>
+        )}
+      </section>
     </div>
   );
 }

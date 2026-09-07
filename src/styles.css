@@ -1259,6 +1259,162 @@ button {
   line-height: 1.4;
 }
 
+.draw-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 22px;
+  background: rgba(29, 35, 27, 0.82);
+  backdrop-filter: blur(8px);
+}
+
+.draw-modal {
+  width: min(100%, 620px);
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  padding: clamp(28px, 5vw, 48px);
+  border: 1px solid rgba(230, 212, 170, 0.34);
+  border-radius: 18px;
+  background: #f6f1e8;
+  color: var(--brand-deep);
+  box-shadow: 0 28px 100px rgba(0, 0, 0, 0.28);
+  text-align: center;
+}
+
+.draw-modal .brand-mark img {
+  width: 166px;
+  filter: brightness(0) saturate(100%) invert(35%) sepia(12%) saturate(644%) hue-rotate(41deg)
+    brightness(94%) contrast(88%);
+}
+
+.draw-modal-kicker {
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.draw-modal h2 {
+  margin: 0;
+  color: var(--brand-deep);
+  font-family: var(--font-heading);
+  font-size: clamp(42px, 7vw, 72px);
+  font-weight: 300;
+  line-height: 0.98;
+}
+
+.draw-modal p {
+  margin: 0;
+  color: #5f654f;
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.draw-name-window {
+  width: 100%;
+  min-height: 118px;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  border: 1px solid rgba(95, 101, 79, 0.28);
+  border-radius: 14px;
+  background: var(--brand);
+  color: #fffdf8;
+  overflow: hidden;
+}
+
+.draw-name-window strong {
+  max-width: 100%;
+  color: inherit;
+  font-size: clamp(32px, 5vw, 52px);
+  font-weight: 400;
+  line-height: 1.03;
+  animation: drawNameTick 0.16s ease;
+}
+
+.draw-name-window.is-reveal {
+  border-color: rgba(215, 170, 98, 0.58);
+  background: var(--brand-deep);
+  color: var(--accent-soft);
+}
+
+.draw-name-window.is-reveal strong {
+  animation: drawWinnerReveal 0.52s ease both;
+}
+
+.draw-progress {
+  width: 100%;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(95, 101, 79, 0.18);
+}
+
+.draw-progress span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: left;
+  background: var(--accent);
+  animation: drawProgress linear forwards;
+}
+
+.draw-modal-results {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  text-align: left;
+}
+
+.draw-modal-results .prize-winner {
+  border: 1px solid rgba(95, 101, 79, 0.12);
+}
+
+.draw-close {
+  width: min(100%, 260px);
+  min-height: 52px;
+  justify-content: center;
+  font-size: 17px;
+  font-weight: 400;
+}
+
+@keyframes drawNameTick {
+  from {
+    opacity: 0.5;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes drawWinnerReveal {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes drawProgress {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
 .admin-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.85fr);
@@ -1648,6 +1804,24 @@ td span {
   }
 
   .winner-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .draw-modal {
+    gap: 14px;
+    padding: 28px 22px;
+  }
+
+  .draw-modal .brand-mark img {
+    width: 138px;
+  }
+
+  .draw-name-window {
+    min-height: 96px;
+    padding: 18px;
+  }
+
+  .draw-modal-results {
     grid-template-columns: 1fr;
   }
 
