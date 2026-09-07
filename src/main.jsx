@@ -1,6 +1,18 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { ArrowRight, Download, Lock, Plus, QrCode, RefreshCw, Search, Ticket, Trophy, Users } from "lucide-react";
+import {
+  ArrowRight,
+  Download,
+  Lock,
+  LogOut,
+  Plus,
+  QrCode,
+  RefreshCw,
+  Search,
+  Ticket,
+  Trophy,
+  Users,
+} from "lucide-react";
 import QRCode from "qrcode";
 import { createClient } from "@supabase/supabase-js";
 import "./styles.css";
@@ -252,10 +264,24 @@ function buildRows(participants, referrals) {
   });
 }
 
-function pickWinner(rows) {
-  const tickets = rows.flatMap((row) => Array.from({ length: row.possibilities }, () => row));
+function pickWinner(rows, excludedIds = []) {
+  const excluded = new Set(excludedIds);
+  const tickets = rows
+    .filter((row) => !excluded.has(row.id))
+    .flatMap((row) => Array.from({ length: row.possibilities }, () => row));
   if (!tickets.length) return null;
   return tickets[Math.floor(Math.random() * tickets.length)];
+}
+
+function runPrizeDraw(rows) {
+  const grillWinner = pickWinner(rows);
+  const setWinner = grillWinner ? pickWinner(rows, [grillWinner.id]) : null;
+
+  return {
+    grill: grillWinner,
+    set: setWinner,
+    createdAt: new Date().toISOString(),
+  };
 }
 
 function exportCsv(rows) {
@@ -305,7 +331,7 @@ function App() {
   const [adminUnlocked, setAdminUnlocked] = useState(false);
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
-  const [winner, setWinner] = useState(null);
+  const [drawResult, setDrawResult] = useState(null);
   const [eventQr, setEventQr] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedId, setSelectedId] = useState("");
@@ -475,7 +501,7 @@ function App() {
     setAdminUnlocked(false);
     setPassword("");
     setUsername("");
-    setWinner(null);
+    setDrawResult(null);
     setStatus({ type: "", message: "" });
   }
 
@@ -516,8 +542,8 @@ function App() {
             setSearchTerm={setSearchTerm}
             refreshAdminEntries={refreshAdminEntries}
             exportCsv={exportCsv}
-            winner={winner}
-            setWinner={setWinner}
+            drawResult={drawResult}
+            setDrawResult={setDrawResult}
             onLogout={logoutAdmin}
           />
         </section>
@@ -815,8 +841,8 @@ function AdminPanel({
   setSearchTerm,
   refreshAdminEntries,
   exportCsv,
-  winner,
-  setWinner,
+  drawResult,
+  setDrawResult,
   onLogout,
 }) {
   if (!adminUnlocked) {
@@ -841,10 +867,14 @@ function AdminPanel({
     <div className="admin-panel">
       <div className="admin-panel-title">
         <div>
-          <span>Resumen en vivo</span>
+          <span>Modo prueba</span>
           <h2>Registro de participantes</h2>
         </div>
-        <p>Sorteo evento · martes 8 de septiembre</p>
+        <p>Simulación interna hasta el día del evento.</p>
+      </div>
+      <div className="test-mode-banner">
+        <strong>Sorteo en modo prueba</strong>
+        <span>Los resultados simulados no quedan guardados como definitivos.</span>
       </div>
       <div className="metric-grid">
         <Metric icon={<Users size={20} />} label="Participantes" value={totals.participants} />
@@ -860,22 +890,22 @@ function AdminPanel({
           <Download size={18} />
           Exportar CSV
         </button>
-        <button onClick={() => setWinner(pickWinner(rows))} disabled={!rows.length}>
+        <button onClick={() => setDrawResult(runPrizeDraw(rows))} disabled={!rows.length}>
           <Trophy size={18} />
-          Sortear
+          Simular sorteo
         </button>
         <button className="ghost-action" onClick={onLogout}>
-          <Lock size={18} />
+          <LogOut size={18} />
           Salir
         </button>
       </div>
-      {winner ? (
+      {drawResult ? (
         <div className="winner-card">
-          <span>Ganador seleccionado</span>
-          <h3>{winner.full_name}</h3>
-          <p>
-            {winner.phone} · {winner.email} · {winner.possibilities} posibilidades
-          </p>
+          <span>Resultado de prueba</span>
+          <div className="winner-grid">
+            <PrizeWinner title="Primer premio · Parrilla" winner={drawResult.grill} />
+            <PrizeWinner title="Premio adicional · Set parrillero" winner={drawResult.set} />
+          </div>
         </div>
       ) : null}
       <div className="admin-layout">
@@ -927,6 +957,24 @@ function AdminPanel({
         <ParticipantDetail row={selectedRow} />
       </div>
     </div>
+  );
+}
+
+function PrizeWinner({ title, winner }) {
+  return (
+    <article className="prize-winner">
+      <span>{title}</span>
+      {winner ? (
+        <>
+          <h3>{winner.full_name}</h3>
+          <p>
+            {winner.phone} · {winner.email} · {winner.possibilities} posibilidades
+          </p>
+        </>
+      ) : (
+        <p>No hay suficientes participantes para asignar este premio.</p>
+      )}
+    </article>
   );
 }
 

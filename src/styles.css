@@ -1164,22 +1164,77 @@ button {
   background: transparent;
 }
 
+.test-mode-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border: 1px solid rgba(215, 170, 98, 0.42);
+  border-radius: 12px;
+  background: #fff8e8;
+  color: var(--brand-deep);
+}
+
+.test-mode-banner strong {
+  color: var(--brand);
+  font-size: 16px;
+}
+
+.test-mode-banner span {
+  color: #68705c;
+  font-size: 14px;
+}
+
 .winner-card {
-  margin-bottom: 18px;
-  padding: 20px;
-  border-radius: 8px;
-  background: var(--brand);
-  color: #fffaf0;
+  display: grid;
+  gap: 16px;
+  margin-bottom: 22px;
+  padding: 22px;
+  border: 1px solid rgba(95, 101, 79, 0.18);
+  border-radius: 14px;
+  background: #eef0e7;
+  color: var(--brand-deep);
 }
 
-.winner-card h3 {
-  margin: 8px 0;
-  font-size: 28px;
+.winner-card > span {
+  color: var(--brand);
 }
 
-.winner-card p {
+.winner-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.prize-winner {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border-radius: 12px;
+  background: #fffdf8;
+}
+
+.prize-winner span {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.prize-winner h3 {
   margin: 0;
-  color: rgba(255, 250, 240, 0.78);
+  color: var(--brand-deep);
+  font-size: clamp(24px, 2.4vw, 32px);
+  line-height: 1.05;
+}
+
+.prize-winner p {
+  margin: 0;
+  color: #5f654f;
+  line-height: 1.4;
 }
 
 .admin-layout {
@@ -1554,6 +1609,15 @@ td span {
 
   .admin-login-card .brand-mark img {
     width: 154px;
+  }
+
+  .test-mode-banner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .winner-grid {
+    grid-template-columns: 1fr;
   }
 
   .scan-panel {
