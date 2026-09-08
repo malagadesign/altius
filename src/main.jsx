@@ -299,23 +299,6 @@ function pickWinner(rows, excludedIds = []) {
   return tickets[Math.floor(Math.random() * tickets.length)];
 }
 
-function runPrizeDraw(rows) {
-  const grillWinner = pickWinner(rows);
-  const setWinner = grillWinner ? pickWinner(rows, [grillWinner.id]) : null;
-
-  return {
-    grill: grillWinner,
-    set: setWinner,
-    createdAt: new Date().toISOString(),
-  };
-}
-
-function wait(ms) {
-  return new Promise((resolve) => {
-    window.setTimeout(resolve, ms);
-  });
-}
-
 function exportCsv(rows) {
   const headers = [
     "Nombre",
@@ -792,7 +775,8 @@ function RegistrationForm({ participant, setParticipant, loading, onSubmit }) {
       />
       <label className="check-row">
         <input type="checkbox" required />
-        Acepto participar del sorteo y ser contactado por Altius de Chamisero.
+        Acepto ser contactado por representantes de Olivos de Chamisero y tengo consentimiento
+        de mis referidos.
       </label>
 
       <button className="primary-action" disabled={loading}>
@@ -925,10 +909,10 @@ function AdminPanel({
     phase: "idle",
     name: "",
     duration: 0,
-    result: null,
+    prizeLabel: "",
   });
 
-  const animatePrizeDraw = (phase, candidates, finalWinner, duration) =>
+  const animatePrizeDraw = (phase, candidates, finalWinner, duration, prizeLabel) =>
     new Promise((resolve) => {
       const names = candidates.length
         ? candidates.map((candidate) => candidate.full_name)
@@ -940,7 +924,7 @@ function AdminPanel({
         phase,
         name: names[0],
         duration,
-        result: null,
+        prizeLabel,
       });
 
       const intervalId = window.setInterval(() => {
@@ -962,27 +946,31 @@ function AdminPanel({
       }, duration);
     });
 
-  const startAnimatedDraw = async () => {
+  const startSinglePrizeDraw = async (prize) => {
     if (!rows.length || drawRunning) return;
 
-    const result = runPrizeDraw(rows);
-    const setCandidates = result.grill
-      ? rows.filter((row) => row.id !== result.grill.id)
-      : rows;
+    const isGrillPrize = prize === "grill";
+    const excludedIds = !isGrillPrize && drawResult?.grill ? [drawResult.grill.id] : [];
+    const candidates = rows.filter((row) => !excludedIds.includes(row.id));
+    const winner = pickWinner(rows, excludedIds);
+    const prizeLabel = isGrillPrize
+      ? "Primer premio · Parrilla"
+      : "Segundo premio · Set parrillero";
 
-    setDrawRunning(true);
-    setDrawResult(null);
-    await animatePrizeDraw("grill", rows, result.grill, 3000);
-    await wait(240);
-    await animatePrizeDraw("set", setCandidates, result.set, 2600);
-    setDrawResult(result);
-    setDrawModal({
-      open: true,
-      phase: "done",
-      name: "",
-      duration: 0,
-      result,
-    });
+    if (!isGrillPrize && !drawResult?.grill) return;
+
+    setDrawRunning(prize);
+    if (isGrillPrize) {
+      setDrawResult(null);
+    }
+
+    await animatePrizeDraw(prize, candidates, winner, isGrillPrize ? 5200 : 4800, prizeLabel);
+
+    setDrawResult((current) =>
+      isGrillPrize
+        ? { grill: winner, set: null, createdAt: new Date().toISOString() }
+        : { grill: current?.grill || null, set: winner, createdAt: new Date().toISOString() },
+    );
     setDrawRunning(false);
   };
 
@@ -1032,9 +1020,19 @@ function AdminPanel({
             <Download size={18} />
             Exportar CSV
           </button>
-          <button onClick={startAnimatedDraw} disabled={!rows.length || drawRunning}>
+          <button
+            onClick={() => startSinglePrizeDraw("grill")}
+            disabled={!rows.length || drawRunning}
+          >
             <Trophy size={18} />
-            {drawRunning ? "Sorteando..." : "Simular sorteo"}
+            {drawRunning === "grill" ? "Sorteando..." : "Sortear primer premio"}
+          </button>
+          <button
+            onClick={() => startSinglePrizeDraw("set")}
+            disabled={!rows.length || drawRunning || !drawResult?.grill || rows.length < 2}
+          >
+            <Trophy size={18} />
+            {drawRunning === "set" ? "Sorteando..." : "Sortear segundo premio"}
           </button>
           <button
             className="danger-action"
@@ -1053,8 +1051,12 @@ function AdminPanel({
           <div className="winner-card">
             <span>Resultado de prueba</span>
             <div className="winner-grid">
-              <PrizeWinner title="Primer premio · Parrilla" winner={drawResult.grill} />
-              <PrizeWinner title="Premio adicional · Set parrillero" winner={drawResult.set} />
+              {drawResult.grill ? (
+                <PrizeWinner title="Primer premio · Parrilla" winner={drawResult.grill} />
+              ) : null}
+              {drawResult.set ? (
+                <PrizeWinner title="Segundo premio · Set parrillero" winner={drawResult.set} />
+              ) : null}
             </div>
           </div>
         ) : null}
@@ -1121,7 +1123,8 @@ function DrawModal({ state, onClose }) {
   const isDone = state.phase === "done";
   const isReveal = state.phase.endsWith("-reveal");
   const isSetPrize = state.phase.startsWith("set");
-  const prizeLabel = isSetPrize ? "Premio adicional · Set parrillero" : "Primer premio · Parrilla";
+  const prizeLabel =
+    state.prizeLabel || (isSetPrize ? "Segundo premio · Set parrillero" : "Primer premio · Parrilla");
   const title = isDone ? "Resultado del sorteo" : isReveal ? "Felicitaciones" : "Sorteando...";
 
   return (
@@ -1154,6 +1157,11 @@ function DrawModal({ state, onClose }) {
             <div className={`draw-progress ${isReveal ? "is-complete" : ""}`} key={state.phase}>
               <span style={{ animationDuration: `${state.duration}ms` }} />
             </div>
+            {isReveal ? (
+              <button className="draw-close" onClick={onClose}>
+                Cerrar
+              </button>
+            ) : null}
           </>
         )}
       </section>
