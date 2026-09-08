@@ -274,23 +274,25 @@ function pickWinner(rows, excludedIds = []) {
 
 function exportCsv(rows) {
   const headers = [
-    "Nombre",
-    "Teléfono",
-    "Email",
-    "Referidos",
-    "Posibilidades",
-    "Fecha",
-    "Link personal",
+    "Nombre referido",
+    "Teléfono referido",
+    "Email referido",
+    "Referido por",
+    "Teléfono titular",
+    "Email titular",
+    "Fecha de carga",
   ];
-  const csvRows = rows.map((row) => [
-    row.full_name,
-    row.phone,
-    row.email,
-    row.referrals.length,
-    row.possibilities,
-    formatDate(row.created_at),
-    row.public_token ? getPersonalUrl(row.public_token) : "",
-  ]);
+  const csvRows = rows.flatMap((row) =>
+    row.referrals.map((referral) => [
+      referral.full_name,
+      referral.phone,
+      referral.email,
+      row.full_name,
+      row.phone,
+      row.email,
+      formatDate(referral.created_at),
+    ]),
+  );
 
   const csv = [headers, ...csvRows]
     .map((cells) =>
@@ -302,7 +304,7 @@ function exportCsv(rows) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = "altius-referidos.csv";
+  link.download = "olivos-referidos.csv";
   link.click();
   URL.revokeObjectURL(url);
 }
@@ -952,9 +954,9 @@ function AdminPanel({
             <RefreshCw size={18} />
             Actualizar
           </button>
-          <button onClick={() => exportCsv(rows)} disabled={!rows.length}>
+          <button onClick={() => exportCsv(rows)} disabled={!totals.referrals}>
             <Download size={18} />
-            Exportar CSV
+            Exportar referidos CSV
           </button>
           <button
             onClick={() => startSinglePrizeDraw("grill")}
