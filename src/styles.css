@@ -1181,30 +1181,6 @@ button {
   background: #fff3ef;
 }
 
-.test-mode-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  margin-bottom: 16px;
-  padding: 14px 16px;
-  border: 1px solid rgba(215, 170, 98, 0.42);
-  border-radius: 12px;
-  background: #fff8e8;
-  color: var(--brand-deep);
-}
-
-.test-mode-banner strong {
-  color: var(--brand);
-  font-size: 16px;
-  font-weight: 400;
-}
-
-.test-mode-banner span {
-  color: #68705c;
-  font-size: 14px;
-}
-
 .winner-card {
   display: grid;
   gap: 16px;
@@ -1812,11 +1788,6 @@ td span {
 
   .admin-login-card .brand-mark img {
     width: 154px;
-  }
-
-  .test-mode-banner {
-    align-items: flex-start;
-    flex-direction: column;
   }
 
   .winner-grid {

@@ -10,7 +10,6 @@ import {
   RefreshCw,
   Search,
   Ticket,
-  Trash2,
   Trophy,
   Users,
 } from "lucide-react";
@@ -251,32 +250,6 @@ async function fetchAdminEntries(username, password) {
   return readDemoData();
 }
 
-async function clearTestEntries(username, password) {
-  if (supabase && password && shouldUseServerApi()) {
-    const response = await fetch("/api/clear-test-data", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password, confirmation: "ELIMINAR PRUEBAS" }),
-    });
-
-    const data = await response.json().catch(() => null);
-    if (!response.ok) {
-      const error = new Error("Could not clear test entries");
-      error.code = data?.code;
-      throw error;
-    }
-    return data;
-  }
-
-  if (username !== demoAdminUsername || password !== demoAdminPassword) {
-    throw new Error("Invalid admin credentials");
-  }
-
-  const emptyData = { participants: [], referrals: [] };
-  writeDemoData(emptyData);
-  return emptyData;
-}
-
 function buildRows(participants, referrals) {
   return participants.map((participant) => {
     const personReferrals = referrals.filter(
@@ -380,35 +353,6 @@ function App() {
   async function refreshAdminEntries() {
     const data = await fetchAdminEntries(username, password);
     setEntries(data);
-  }
-
-  async function clearAdminTestEntries() {
-    const confirmed = window.confirm(
-      "Esto eliminará todos los participantes y referidos de prueba. ¿Quieres continuar?",
-    );
-
-    if (!confirmed) return;
-
-    setLoading(true);
-    setStatus({ type: "", message: "" });
-
-    try {
-      const data = await clearTestEntries(username, password);
-      setEntries(data);
-      setSelectedId("");
-      setDrawResult(null);
-      setStatus({ type: "success", message: "Registros de prueba eliminados." });
-    } catch (error) {
-      setStatus({
-        type: "error",
-        message:
-          error.code === "reset_disabled"
-            ? "La limpieza de pruebas no está habilitada en Vercel."
-            : "No se pudieron eliminar los registros de prueba.",
-      });
-    } finally {
-      setLoading(false);
-    }
   }
 
   async function refreshParticipant(token = currentParticipant?.public_token) {
@@ -569,7 +513,7 @@ function App() {
           <div className="admin-header-brand">
             <LogoMark />
             <div>
-              <span>Gestión del sorteo</span>
+              <span>Sorteo Olivos de Chamisero</span>
               <h1>Panel de referidos</h1>
             </div>
           </div>
@@ -594,12 +538,10 @@ function App() {
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
             refreshAdminEntries={refreshAdminEntries}
-            clearAdminTestEntries={clearAdminTestEntries}
             exportCsv={exportCsv}
             drawResult={drawResult}
             setDrawResult={setDrawResult}
             onLogout={logoutAdmin}
-            loading={loading}
           />
         </section>
       </main>
@@ -896,12 +838,10 @@ function AdminPanel({
   searchTerm,
   setSearchTerm,
   refreshAdminEntries,
-  clearAdminTestEntries,
   exportCsv,
   drawResult,
   setDrawResult,
   onLogout,
-  loading,
 }) {
   const [drawRunning, setDrawRunning] = useState(false);
   const [drawModal, setDrawModal] = useState({
@@ -997,14 +937,10 @@ function AdminPanel({
       <div className="admin-panel">
         <div className="admin-panel-title">
           <div>
-            <span>Modo prueba</span>
+            <span>Sorteo Olivos de Chamisero</span>
             <h2>Registro de participantes</h2>
           </div>
-          <p>Simulación interna hasta el día del evento.</p>
-        </div>
-        <div className="test-mode-banner">
-          <strong>Sorteo en modo prueba</strong>
-          <span>Los resultados simulados no quedan guardados como definitivos.</span>
+          <p>Evento martes 8 de septiembre.</p>
         </div>
         <div className="metric-grid">
           <Metric icon={<Users size={20} />} label="Participantes" value={totals.participants} />
@@ -1034,14 +970,6 @@ function AdminPanel({
             <Trophy size={18} />
             {drawRunning === "set" ? "Sorteando..." : "Sortear segundo premio"}
           </button>
-          <button
-            className="danger-action"
-            onClick={clearAdminTestEntries}
-            disabled={loading || !rows.length || drawRunning}
-          >
-            <Trash2 size={18} />
-            Eliminar pruebas
-          </button>
           <button className="ghost-action" onClick={onLogout}>
             <LogOut size={18} />
             Salir
@@ -1049,7 +977,7 @@ function AdminPanel({
         </div>
         {drawResult ? (
           <div className="winner-card">
-            <span>Resultado de prueba</span>
+            <span>Resultado del sorteo</span>
             <div className="winner-grid">
               {drawResult.grill ? (
                 <PrizeWinner title="Primer premio · Parrilla" winner={drawResult.grill} />
@@ -1136,7 +1064,7 @@ function DrawModal({ state, onClose }) {
     >
       <section className={`draw-modal phase-${state.phase}`}>
         <LogoMark />
-        <span className="draw-modal-kicker">Modo prueba</span>
+        <span className="draw-modal-kicker">Sorteo Olivos de Chamisero</span>
         <h2 id="draw-modal-title">{title}</h2>
         {isDone ? (
           <>
